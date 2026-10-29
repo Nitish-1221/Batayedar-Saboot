@@ -1,4 +1,4 @@
-# Batayedar Saboot (बटाईदार सबूत)
+# Batayedar Saboot
 ### Tenant Farmer Crop Evidence Android Application
 
 > **"Your Hard Work, Your Independent Evidence"**
@@ -12,6 +12,16 @@ In many regions, government land records (such as *Khatauni*, *Khasra*, or *Patt
 **Batayedar Saboot** solves this critical problem by providing tenant farmers with an independent, verifiable, 100% offline-capable tool to document their crop cultivation on-site with mandatory hardware GPS satellite verification and cryptographic fingerprints.
 
 ---
+
+## Our solution APK link "https://drive.google.com/file/d/1eCTo3Ur1iq4QTGpjgsUO1ORcPd4nA5jZ/view?usp=sharing"
+## Batyedar Login detail 
+email:- "tech65262@gmail.com"
+password:- "123456"
+
+## Landlord Login Details 
+email:- "nk2630096@gmail.com"
+Password:- "123456"
+
 
 ## 🛠️ Technology Stack & Architecture
 - **Platform**: Native Android (Android 7.0+ / API 24 to Android 14+ / API 34).
