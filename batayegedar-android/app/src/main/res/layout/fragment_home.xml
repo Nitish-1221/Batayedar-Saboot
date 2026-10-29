@@ -234,10 +234,13 @@
 
             <!-- Card 4: Cloud Sync Status -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCloudSync"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="1dp"
@@ -251,6 +254,7 @@
                     android:padding="14dp">
 
                     <ImageView
+                        android:id="@+id/ivSyncIcon"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:src="@drawable/ic_sync"

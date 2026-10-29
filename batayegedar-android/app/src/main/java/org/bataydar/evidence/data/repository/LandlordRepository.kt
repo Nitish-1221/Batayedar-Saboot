@@ -1,5 +1,6 @@
 package org.bataydar.evidence.data.repository
 
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.bataydar.evidence.data.remote.ApiClient
@@ -23,7 +24,7 @@ class LandlordRepository(
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data ?: LandlordDashboardDto())
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to load dashboard (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to load dashboard")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -37,7 +38,7 @@ class LandlordRepository(
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data?.requests ?: emptyList())
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to load requests (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to load requests")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -56,7 +57,7 @@ class LandlordRepository(
                     Result.failure(Exception("Confirmation details not found"))
                 }
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to load request details (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to load request details")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -76,7 +77,7 @@ class LandlordRepository(
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(Unit)
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to record response (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to record response")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -90,7 +91,7 @@ class LandlordRepository(
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data?.history ?: emptyList())
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to load history (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to load history")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -109,12 +110,31 @@ class LandlordRepository(
                     Result.failure(Exception("Profile data unavailable"))
                 }
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to fetch profile (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Failed to fetch profile")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun <T> extractErrorMessage(response: retrofit2.Response<T>, fallback: String): String {
+        try {
+            val errorJson = response.errorBody()?.string()
+            if (!errorJson.isNullOrBlank()) {
+                val jsonObject = JsonParser.parseString(errorJson).asJsonObject
+                if (jsonObject.has("error") && jsonObject.get("error").isJsonObject) {
+                    val errorObj = jsonObject.getAsJsonObject("error")
+                    if (errorObj.has("message") && !errorObj.get("message").isJsonNull) {
+                        return errorObj.get("message").asString
+                    }
+                }
+                if (jsonObject.has("message") && !jsonObject.get("message").isJsonNull) {
+                    return jsonObject.get("message").asString
+                }
+            }
+        } catch (_: Exception) {}
+        return "$fallback (${response.code()})"
     }
 }
 

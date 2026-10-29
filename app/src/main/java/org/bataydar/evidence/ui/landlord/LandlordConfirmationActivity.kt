@@ -4,17 +4,23 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import org.bataydar.evidence.BataydarApp
 import org.bataydar.evidence.R
 import org.bataydar.evidence.data.model.LandlordStatus
+import org.bataydar.evidence.data.remote.ApiClient
+import org.bataydar.evidence.data.remote.auth.TokenManager
 import org.bataydar.evidence.databinding.ActivityLandlordConfirmationBinding
+import org.json.JSONObject
 
 class LandlordConfirmationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLandlordConfirmationBinding
     private val evidenceRepository by lazy { BataydarApp.instance.evidenceRepository }
     private var recordId: String = ""
+    private var recordLandlordPhone: String = ""
+    private var recordLandlordName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +53,9 @@ class LandlordConfirmationActivity : AppCompatActivity() {
             val recordWithEvidence = evidenceRepository.getRecordWithEvidence(recordId)
             val record = recordWithEvidence?.record ?: return@launch
 
+            recordLandlordPhone = record.landlordPhone.orEmpty()
+            recordLandlordName = record.landlordName.orEmpty()
+
             when (record.landlordConfirmationStatus) {
                 LandlordStatus.NOT_REQUESTED -> binding.rbNotRequested.isChecked = true
                 LandlordStatus.REQUESTED -> binding.rbRequested.isChecked = true
@@ -74,6 +83,53 @@ class LandlordConfirmationActivity : AppCompatActivity() {
             val notes = binding.etNotes.text?.toString()?.trim()
 
             lifecycleScope.launch {
+                val tokenManager = TokenManager.getInstance(this@LandlordConfirmationActivity)
+                val apiClient = ApiClient.getInstance(this@LandlordConfirmationActivity)
+
+                if (selectedStatus == LandlordStatus.REQUESTED && tokenManager.isLoggedIn() && recordLandlordPhone.isNotBlank()) {
+                    try {
+                        val resp = apiClient.cropRecordApi.requestLandlordConfirmation(
+                            recordId,
+                            mapOf(
+                                "landlordName" to recordLandlordName.ifEmpty { "Landowner" },
+                                "landlordPhone" to recordLandlordPhone,
+                                "verificationMethod" to "DIRECT_VERBAL",
+                                "notes" to (notes ?: "")
+                            )
+                        )
+
+                        if (!resp.isSuccessful) {
+                            val errorJson = resp.errorBody()?.string()
+                            var errorCode = ""
+                            var errorMessage = ""
+                            if (!errorJson.isNullOrBlank()) {
+                                try {
+                                    val obj = JSONObject(errorJson)
+                                    val errObj = obj.optJSONObject("error")
+                                    errorCode = errObj?.optString("code") ?: ""
+                                    errorMessage = errObj?.optString("message") ?: ""
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+
+                            if (resp.code() == 404 && (errorCode == "LANDLORD_NOT_REGISTERED" || errorMessage.contains("registered", ignoreCase = true))) {
+                                MaterialAlertDialogBuilder(this@LandlordConfirmationActivity)
+                                    .setTitle(R.string.landlord_unregistered_dialog_title)
+                                    .setMessage(getString(R.string.landlord_unregistered_dialog_message, recordLandlordPhone))
+                                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                        dialog.dismiss()
+                                        finish()
+                                    }
+                                    .show()
+                                return@launch
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
                 evidenceRepository.updateLandlordConfirmation(
                     recordId = recordId,
                     status = selectedStatus,

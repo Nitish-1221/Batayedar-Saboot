@@ -46,6 +46,11 @@ object ServerConfigDialog {
             orientation = RadioGroup.VERTICAL
         }
 
+        val rbRender = RadioButton(activity).apply {
+            id = View.generateViewId()
+            text = "Cloud Server (Render - Live)\n${ServerConfig.URL_RENDER}"
+            textSize = 13f
+        }
         val rbUsb = RadioButton(activity).apply {
             id = View.generateViewId()
             text = "USB Cable (adb reverse)\n${ServerConfig.URL_USB_REVERSE}"
@@ -67,6 +72,7 @@ object ServerConfigDialog {
             textSize = 13f
         }
 
+        radioGroup.addView(rbRender)
         radioGroup.addView(rbUsb)
         radioGroup.addView(rbWifi)
         radioGroup.addView(rbEmu)
@@ -75,7 +81,7 @@ object ServerConfigDialog {
 
         // Custom URL input
         val etCustomUrl = EditText(activity).apply {
-            hint = "http://<ip-or-host>:5000/api/v1/"
+            hint = "https://<host>/api/v1/"
             textSize = 14f
             setText(currentUrl)
             visibility = View.GONE
@@ -84,6 +90,7 @@ object ServerConfigDialog {
 
         // Pre-select based on current URL
         when (currentUrl) {
+            ServerConfig.URL_RENDER -> rbRender.isChecked = true
             ServerConfig.URL_USB_REVERSE -> rbUsb.isChecked = true
             ServerConfig.URL_PC_WIFI -> rbWifi.isChecked = true
             ServerConfig.URL_EMULATOR -> rbEmu.isChecked = true
@@ -119,6 +126,7 @@ object ServerConfigDialog {
 
         fun getSelectedUrl(): String {
             return when (radioGroup.checkedRadioButtonId) {
+                rbRender.id -> ServerConfig.URL_RENDER
                 rbUsb.id -> ServerConfig.URL_USB_REVERSE
                 rbWifi.id -> ServerConfig.URL_PC_WIFI
                 rbEmu.id -> ServerConfig.URL_EMULATOR

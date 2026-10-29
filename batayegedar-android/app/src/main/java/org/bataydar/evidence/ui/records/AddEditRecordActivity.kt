@@ -6,16 +6,26 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import org.bataydar.evidence.BataydarApp
 import org.bataydar.evidence.R
+import org.bataydar.evidence.data.model.CropRecordEntity
 import org.bataydar.evidence.data.model.FarmerProfileEntity
+import org.bataydar.evidence.data.model.LandlordStatus
+import org.bataydar.evidence.data.remote.ApiClient
+import org.bataydar.evidence.data.remote.auth.TokenManager
+import org.bataydar.evidence.data.remote.dto.SyncCropRecordItem
+import org.bataydar.evidence.data.remote.dto.SyncFieldItem
+import org.bataydar.evidence.data.remote.dto.SyncPushRequest
 import org.bataydar.evidence.databinding.ActivityAddEditRecordBinding
 import org.bataydar.evidence.ui.capture.GpsCaptureActivity
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class AddEditRecordActivity : AppCompatActivity() {
 
@@ -126,6 +136,7 @@ class AddEditRecordActivity : AppCompatActivity() {
         val fieldDesc = binding.etFieldDesc.text?.toString().orEmpty().trim()
         val landlordName = binding.etLandlordName.text?.toString().orEmpty().trim()
         val landlordPhone = binding.etLandlordPhone.text?.toString().orEmpty().trim()
+        val requestConfirmation = binding.cbRequestConfirmation.isChecked
 
         var isValid = true
 
@@ -148,6 +159,19 @@ class AddEditRecordActivity : AppCompatActivity() {
             isValid = false
         } else {
             binding.tilSowingDate.error = null
+        }
+
+        // Landlord details are completely optional UNLESS confirmation request is explicitly checked
+        if (requestConfirmation) {
+            val digitsOnly = landlordPhone.filter { it.isDigit() }
+            if (digitsOnly.length != 10) {
+                binding.tilLandlordPhone.error = getString(R.string.landlord_phone_required_for_confirmation)
+                isValid = false
+            } else {
+                binding.tilLandlordPhone.error = null
+            }
+        } else {
+            binding.tilLandlordPhone.error = null
         }
 
         if (!isValid) return
@@ -174,18 +198,140 @@ class AddEditRecordActivity : AppCompatActivity() {
 
             if (result.isSuccess) {
                 val createdRecord = result.getOrThrow()
-                Toast.makeText(this@AddEditRecordActivity, "Crop record saved!", Toast.LENGTH_SHORT).show()
 
-                if (launchCaptureAfter) {
-                    val captureIntent = Intent(this@AddEditRecordActivity, GpsCaptureActivity::class.java).apply {
-                        putExtra("RECORD_ID", createdRecord.recordId)
-                    }
-                    startActivity(captureIntent)
+                if (requestConfirmation) {
+                    processLandlordConfirmationRequest(
+                        record = createdRecord,
+                        landlordName = landlordName.ifEmpty { "Landowner" },
+                        landlordPhone = landlordPhone,
+                        launchCaptureAfter = launchCaptureAfter
+                    )
+                } else {
+                    Toast.makeText(this@AddEditRecordActivity, "Crop record saved!", Toast.LENGTH_SHORT).show()
+                    proceedNext(createdRecord.recordId, launchCaptureAfter)
                 }
-                finish()
             } else {
                 Toast.makeText(this@AddEditRecordActivity, result.exceptionOrNull()?.message ?: "Error saving record", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private suspend fun processLandlordConfirmationRequest(
+        record: CropRecordEntity,
+        landlordName: String,
+        landlordPhone: String,
+        launchCaptureAfter: Boolean
+    ) {
+        val tokenManager = TokenManager.getInstance(this@AddEditRecordActivity)
+        val apiClient = ApiClient.getInstance(this@AddEditRecordActivity)
+
+        if (!tokenManager.isLoggedIn()) {
+            Toast.makeText(
+                this@AddEditRecordActivity,
+                "Crop record saved locally. Log in to cloud to request landlord confirmation.",
+                Toast.LENGTH_LONG
+            ).show()
+            proceedNext(record.recordId, launchCaptureAfter)
+            return
+        }
+
+        try {
+            // Push record and field to backend first to ensure MongoDB persistence
+            val syncField = SyncFieldItem(
+                fieldId = record.recordId,
+                fieldName = record.fieldName,
+                village = record.village,
+                district = record.district,
+                state = record.state
+            )
+            val syncCrop = SyncCropRecordItem(
+                recordId = record.recordId,
+                fieldId = record.recordId,
+                cropType = record.cropType,
+                cultivationStartDate = record.sowingDate,
+                notes = record.fieldDescription ?: "",
+                landlordName = landlordName,
+                landlordPhone = landlordPhone
+            )
+            apiClient.syncApi.pushSync(
+                SyncPushRequest(
+                    idempotencyKey = "sync-create-${UUID.randomUUID()}",
+                    fields = listOf(syncField),
+                    cropRecords = listOf(syncCrop)
+                )
+            )
+
+            // Submit confirmation request
+            val response = apiClient.cropRecordApi.requestLandlordConfirmation(
+                record.recordId,
+                mapOf(
+                    "landlordName" to landlordName,
+                    "landlordPhone" to landlordPhone,
+                    "verificationMethod" to "DIRECT_VERBAL",
+                    "notes" to "Confirmation requested during crop record creation."
+                )
+            )
+
+            if (response.isSuccessful) {
+                evidenceRepository.updateLandlordConfirmation(
+                    recordId = record.recordId,
+                    status = LandlordStatus.REQUESTED,
+                    notes = "Confirmation request submitted to $landlordName ($landlordPhone)"
+                )
+                Toast.makeText(
+                    this@AddEditRecordActivity,
+                    "Crop record saved and confirmation requested!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                proceedNext(record.recordId, launchCaptureAfter)
+            } else {
+                val errorJson = response.errorBody()?.string()
+                var errorCode = ""
+                var errorMessage = ""
+                if (!errorJson.isNullOrBlank()) {
+                    try {
+                        val obj = JSONObject(errorJson)
+                        val errObj = obj.optJSONObject("error")
+                        errorCode = errObj?.optString("code") ?: ""
+                        errorMessage = errObj?.optString("message") ?: ""
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                if (response.code() == 404 && (errorCode == "LANDLORD_NOT_REGISTERED" || errorMessage.contains("registered", ignoreCase = true))) {
+                    MaterialAlertDialogBuilder(this@AddEditRecordActivity)
+                        .setTitle(R.string.landlord_unregistered_dialog_title)
+                        .setMessage(getString(R.string.landlord_unregistered_dialog_message, landlordPhone))
+                        .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                            proceedNext(record.recordId, launchCaptureAfter)
+                        }
+                        .setCancelable(false)
+                        .show()
+                } else {
+                    val displayMsg = if (errorMessage.isNotEmpty()) errorMessage else "Could not request confirmation (HTTP ${response.code()})"
+                    Toast.makeText(this@AddEditRecordActivity, "Record saved. $displayMsg", Toast.LENGTH_LONG).show()
+                    proceedNext(record.recordId, launchCaptureAfter)
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(
+                this@AddEditRecordActivity,
+                "Crop record saved safely locally.",
+                Toast.LENGTH_SHORT
+            ).show()
+            proceedNext(record.recordId, launchCaptureAfter)
+        }
+    }
+
+    private fun proceedNext(recordId: String, launchCaptureAfter: Boolean) {
+        if (launchCaptureAfter) {
+            val captureIntent = Intent(this@AddEditRecordActivity, GpsCaptureActivity::class.java).apply {
+                putExtra("RECORD_ID", recordId)
+            }
+            startActivity(captureIntent)
+        }
+        finish()
     }
 }

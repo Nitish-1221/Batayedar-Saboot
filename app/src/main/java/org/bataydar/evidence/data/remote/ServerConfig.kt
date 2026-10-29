@@ -17,10 +17,11 @@ object ServerConfig {
     const val KEY_CUSTOM_URL = "custom_server_base_url"
 
     // Standard preset endpoints
-    const val URL_EMULATOR = "http://10.0.2.2:5000/api/v1/"
+    const val URL_RENDER = "https://batayedar-saboot.onrender.com/api/v1/"
     const val URL_USB_REVERSE = "http://127.0.0.1:5000/api/v1/"
+    const val URL_EMULATOR = "http://10.0.2.2:5000/api/v1/"
     const val URL_PC_WIFI = "http://10.66.152.218:5000/api/v1/"
-    const val URL_PRODUCTION = "https://api.batayedar.org/api/v1/"
+    const val URL_PRODUCTION = "https://batayedar-saboot.onrender.com/api/v1/"
 
     /**
      * Determines whether the app is running on an Android Emulator.
@@ -57,10 +58,7 @@ object ServerConfig {
      * - Physical Device -> 127.0.0.1:5000 (routes via USB with 'adb reverse tcp:5000 tcp:5000')
      */
     fun getDefaultBaseUrl(): String {
-        if (!BuildConfig.DEBUG) {
-            return URL_PRODUCTION
-        }
-        return if (isEmulator()) URL_EMULATOR else URL_USB_REVERSE
+        return URL_RENDER
     }
 
     /**

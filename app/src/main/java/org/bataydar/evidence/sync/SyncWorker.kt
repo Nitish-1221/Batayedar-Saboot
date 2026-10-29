@@ -64,8 +64,21 @@ class SyncWorker(
             )
         }
 
+        val syncFields = pendingRecords.map { record ->
+            SyncFieldItem(
+                fieldId = record.recordId,
+                fieldName = record.fieldName,
+                description = record.fieldDescription ?: "",
+                village = record.village,
+                district = record.district,
+                state = record.state,
+                areaAcres = 1.0
+            )
+        }.distinctBy { it.fieldId }
+
         val pushRequest = SyncPushRequest(
             idempotencyKey = "sync-batch-${UUID.randomUUID()}",
+            fields = syncFields,
             cropRecords = syncItems
         )
 

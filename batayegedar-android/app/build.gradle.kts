@@ -16,14 +16,14 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5000/api/v1/\"")
+        buildConfigField("String", "BASE_URL", "\"https://batayedar-saboot.onrender.com/api/v1/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"https://api.batayedar.org/api/v1/\"")
+            buildConfigField("String", "BASE_URL", "\"https://batayedar-saboot.onrender.com/api/v1/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -31,7 +31,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5000/api/v1/\"")
+            buildConfigField("String", "BASE_URL", "\"https://batayedar-saboot.onrender.com/api/v1/\"")
         }
     }
 

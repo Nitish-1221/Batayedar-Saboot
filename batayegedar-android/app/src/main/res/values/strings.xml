@@ -35,10 +35,16 @@
     <string name="no_recent_records">No cultivation records added yet. Tap \'Add Crop Evidence\' to create your first crop record!</string>
 
     <!-- Sync Statuses -->
+    <string name="sync_status_online">Online Mode</string>
+    <string name="sync_status_online_syncing">Online (Syncing %d)</string>
     <string name="sync_status_offline">Offline Mode (Local Safe)</string>
+    <string name="sync_status_offline_no_net">Offline Mode (No Internet)</string>
     <string name="sync_status_pending">Pending Sync (%d items)</string>
     <string name="sync_status_synced">Synced with Cloud</string>
     <string name="sync_status_failed">Sync Failed (Will Retry)</string>
+    <string name="sync_value_online">Online</string>
+    <string name="sync_value_synced">Cloud Synced</string>
+    <string name="sync_value_offline">Offline Safe</string>
     <string name="sync_banner_notice">All evidence is permanently stored on your phone. Cloud sync is optional and never deletes local data.</string>
 
     <!-- Profile -->
@@ -80,7 +86,11 @@
     <string name="independent_record_notice">Independent Record: Land ownership documents or landlord approval are NOT required to document your crops.</string>
     <string name="field_name_helper">User-entered local name, separate from satellite GPS fix</string>
     <string name="landlord_section_optional_title">Landowner Details (Completely Optional)</string>
-    <string name="landlord_section_optional_subtitle">Not required for legal cultivation documentation</string>
+    <string name="landlord_section_optional_subtitle">Landlord details and confirmation are completely optional. You can save and export your cultivation evidence without a landlord.</string>
+    <string name="landlord_cb_request_confirmation">Request Landlord Confirmation (Optional)</string>
+    <string name="landlord_unregistered_dialog_title">Landlord Not Registered</string>
+    <string name="landlord_unregistered_dialog_message">No registered Landlord account was found with mobile number %1$s.\n\nConfirmation cannot be requested until the landlord registers an account. You can still save and export your cultivation evidence without a landlord.</string>
+    <string name="landlord_phone_required_for_confirmation">Please enter a valid 10-digit mobile number to request confirmation.</string>
     <string name="landlord_name_hint">Landowner Full Name (Optional)</string>
     <string name="landlord_phone_hint">10-digit Phone Number (Optional)</string>
     <string name="error_field_name_required">Field identifier is required</string>

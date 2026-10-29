@@ -360,6 +360,16 @@
                         android:textColorHint="@color/input_hint"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbRequestConfirmation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/landlord_cb_request_confirmation"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    app:buttonTint="@color/primary_green" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

@@ -48,6 +48,7 @@ class BataydarApp : Application() {
         )
     }
     val syncManager by lazy { org.bataydar.evidence.sync.SyncManager.getInstance(this) }
+    val networkMonitor by lazy { org.bataydar.evidence.util.NetworkMonitor(this) }
 
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(LocaleHelper.applySavedLocale(base))

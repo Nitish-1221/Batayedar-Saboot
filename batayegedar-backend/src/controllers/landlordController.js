@@ -25,20 +25,35 @@ async function requestConfirmation(req, res, next) {
 
     const confirmationId = crypto.randomUUID();
 
-    // If landlord is already registered, link their landlordId
+    // Link only to a valid registered landlord account
     const User = require('../models/User');
+    const cleanPhone = landlordPhone.trim();
     const existingLandlord = await User.findOne({
-      phone: landlordPhone.trim(),
+      $or: [
+        { phone: cleanPhone },
+        { phone: cleanPhone.replace('+91', '') },
+        { phone: '+91' + cleanPhone.replace('+91', '') }
+      ],
       role: 'LANDLORD'
     });
+
+    if (!existingLandlord) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'LANDLORD_NOT_REGISTERED',
+          message: `No registered landlord account found with phone number ${landlordPhone}. Confirmation cannot be requested until the landlord registers an account. You can still save and export your cultivation evidence without a landlord.`
+        }
+      });
+    }
 
     const confirmation = new LandlordConfirmation({
       confirmationId,
       recordId,
       farmerId: req.farmerId,
-      landlordName,
-      landlordPhone: landlordPhone.trim(),
-      landlordId: existingLandlord ? existingLandlord.userId : undefined,
+      landlordName: landlordName.trim(),
+      landlordPhone: cleanPhone,
+      landlordId: existingLandlord.userId,
       status: 'REQUESTED',
       requestedAt: new Date(),
       verificationMethod: verificationMethod || 'DIRECT_VERBAL',
@@ -51,12 +66,11 @@ async function requestConfirmation(req, res, next) {
 
     await confirmation.save();
 
-    // Update crop record landlord details if not populated
-    if (!cropRecord.landlordName) {
-      cropRecord.landlordName = landlordName;
-      cropRecord.landlordPhone = landlordPhone;
-      await cropRecord.save();
-    }
+    // Update crop record landlord details and status
+    cropRecord.landlordName = landlordName.trim();
+    cropRecord.landlordPhone = cleanPhone;
+    cropRecord.landlordConfirmationStatus = 'REQUESTED';
+    await cropRecord.save();
 
     await recordAudit({
       action: 'LANDLORD_CONFIRMATION_REQUESTED',

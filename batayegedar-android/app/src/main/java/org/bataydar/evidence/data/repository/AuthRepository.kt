@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import org.bataydar.evidence.data.local.FarmerProfileDao
 import org.bataydar.evidence.data.model.FarmerProfileEntity
 import android.content.Context
+import com.google.gson.JsonParser
 import org.bataydar.evidence.data.remote.ApiClient
 import org.bataydar.evidence.data.remote.ServerConfig
 import org.bataydar.evidence.data.remote.auth.TokenManager
@@ -120,8 +121,7 @@ class AuthRepository(
                     createdUser.delete().await()
                 } catch (_: Exception) {}
 
-                val errorMsg = response.body()?.error?.message
-                    ?: "Registration failed (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Registration failed")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -203,7 +203,7 @@ class AuthRepository(
             } else {
                 firebaseAuth.signOut()
                 tokenManager.clear()
-                val errorMsg = response.body()?.error?.message ?: "Account verification failed (${response.code()})"
+                val errorMsg = extractErrorMessage(response, "Account verification failed")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -254,7 +254,7 @@ class AuthRepository(
                 tokenManager.clear()
                 Result.success(Unit)
             } else {
-                val errorMsg = response.body()?.error?.message ?: "Failed to change password"
+                val errorMsg = extractErrorMessage(response, "Failed to change password")
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
@@ -285,5 +285,27 @@ class AuthRepository(
             is FirebaseNetworkException -> Exception("Internet connection required for login. Please check your network connection.")
             else -> Exception(e.message ?: "Authentication error occurred.")
         }
+    }
+
+    private fun <T> extractErrorMessage(response: retrofit2.Response<T>, fallback: String): String {
+        try {
+            val errorJson = response.errorBody()?.string()
+            if (!errorJson.isNullOrBlank()) {
+                val jsonObject = JsonParser.parseString(errorJson).asJsonObject
+                if (jsonObject.has("error") && jsonObject.get("error").isJsonObject) {
+                    val errorObj = jsonObject.getAsJsonObject("error")
+                    if (errorObj.has("message") && !errorObj.get("message").isJsonNull) {
+                        return errorObj.get("message").asString
+                    }
+                }
+                if (jsonObject.has("message") && !jsonObject.get("message").isJsonNull) {
+                    return jsonObject.get("message").asString
+                }
+            }
+        } catch (_: Exception) {}
+        if (response.code() == 409) {
+            return "An account with this phone number or email already exists."
+        }
+        return "$fallback (${response.code()})"
     }
 }

@@ -35,10 +35,16 @@
     <string name="no_recent_records">अभी कोई फसल रिकॉर्ड नहीं है। अपना पहला रिकॉर्ड बनाने के लिए \'फसल सबूत जोड़ें\' पर टैप करें!</string>
 
     <!-- Sync Statuses -->
-    <string name="sync_status_offline">ऑफ़लाइन मोड (सुरक्षित स्थानीय संग्रह)</string>
+    <string name="sync_status_online">ऑनलाइन मोड</string>
+    <string name="sync_status_online_syncing">ऑनलाइन (सिंक हो रहा %d)</string>
+    <string name="sync_status_offline">ऑफ़लाइन मोड (स्थानीय सुरक्षित)</string>
+    <string name="sync_status_offline_no_net">ऑफ़लाइन मोड (इंटरनेट नहीं)</string>
     <string name="sync_status_pending">सिंक प्रतीक्षित (%d आइटम)</string>
     <string name="sync_status_synced">क्लाउड से सिंक किया गया</string>
     <string name="sync_status_failed">सिंक विफल (पुनः प्रयास होगा)</string>
+    <string name="sync_value_online">ऑनलाइन</string>
+    <string name="sync_value_synced">क्लाउड सिंक</string>
+    <string name="sync_value_offline">ऑफ़लाइन सुरक्षित</string>
     <string name="sync_banner_notice">सभी साक्ष्य आपके फ़ोन में हमेशा सुरक्षित रहते हैं। क्लाउड सिंक वैकल्पिक है और स्थानीय डेटा कभी नहीं मिटता।</string>
 
     <!-- Profile -->
@@ -80,7 +86,11 @@
     <string name="independent_record_notice">स्वतंत्र रिकॉर्ड: आपकी फसल दर्ज करने के लिए भूमि स्वामित्व दस्तावेज या भूस्वामी की मंजूरी की कोई आवश्यकता नहीं है।</string>
     <string name="field_name_helper">उपयोगकर्ता द्वारा दर्ज स्थानीय नाम, जो जीपीएस स्थिति से अलग है</string>
     <string name="landlord_section_optional_title">भूस्वामी का विवरण (पूर्णतः वैकल्पिक)</string>
-    <string name="landlord_section_optional_subtitle">वैध फसल दस्तावेजीकरण के लिए आवश्यक नहीं</string>
+    <string name="landlord_section_optional_subtitle">ज़मींदार का विवरण और पुष्टि पूरी तरह वैकल्पिक हैं। आप ज़मींदार के बिना भी अपने खेती के साक्ष्य सहेज और निर्यात कर सकते हैं।</string>
+    <string name="landlord_cb_request_confirmation">ज़मींदार से पुष्टि का अनुरोध करें (वैकल्पिक)</string>
+    <string name="landlord_unregistered_dialog_title">ज़मींदार पंजीकृत नहीं है</string>
+    <string name="landlord_unregistered_dialog_message">मोबाइल नंबर %1$s के साथ कोई पंजीकृत ज़मींदार खाता नहीं मिला।\n\nजब तक ज़मींदार खाता नहीं बनाता, पुष्टि का अनुरोध नहीं किया जा सकता। आप बिना ज़मींदार के भी अपने खेती के साक्ष्य सुरक्षित और निर्यात कर सकते हैं।</string>
+    <string name="landlord_phone_required_for_confirmation">पुष्टि का अनुरोध करने के लिए कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।</string>
     <string name="landlord_name_hint">भूस्वामी का पूरा नाम (वैकल्पिक)</string>
     <string name="landlord_phone_hint">10-अंकों का मोबाइल नंबर (वैकल्पिक)</string>
     <string name="error_field_name_required">खेत की पहचान आवश्यक है</string>

@@ -2,6 +2,7 @@ const request = require('supertest');
 const crypto = require('crypto');
 const app = require('../src/app');
 const storageService = require('../src/services/storageService');
+const User = require('../src/models/User');
 require('./setup');
 
 describe('Evidence Verification & Offline Synchronization', () => {
@@ -202,6 +203,14 @@ describe('Evidence Verification & Offline Synchronization', () => {
 
   describe('Landlord Confirmation Workflow', () => {
     it('should create confirmation request and record verbal response', async () => {
+      // Pre-register landlord in the system
+      await User.create({
+        userId: 'landlord-suresh-123',
+        fullName: 'Suresh Chandra Sharma',
+        phone: '+919876500000',
+        role: 'LANDLORD'
+      });
+
       // Step 1: Create confirmation request
       const reqRes = await request(app)
         .post(`/api/v1/crop-records/${recordId}/confirmation-requests`)

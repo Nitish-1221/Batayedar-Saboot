@@ -99,4 +99,44 @@ class OfflineRecordAndSyncTest {
             disclaimer.contains("applicable state laws")
         )
     }
+
+    @Test
+    fun testCropRecordWithoutLandlordDetails_validAndIndependent() {
+        val record = CropRecordEntity(
+            recordId = "REC-20261029-ABCD",
+            farmerId = "farmer-777",
+            fieldName = "Dakshin Khet",
+            village = "Siwan",
+            district = "Siwan",
+            state = "Bihar",
+            cropType = "Wheat (गेहूँ)",
+            sowingDate = "2026-10-20",
+            fieldDescription = "Independent cultivation",
+            landlordName = null,
+            landlordPhone = null,
+            landlordConfirmationStatus = LandlordStatus.NOT_REQUESTED
+        )
+
+        assertNull(record.landlordName)
+        assertNull(record.landlordPhone)
+        assertEquals(LandlordStatus.NOT_REQUESTED, record.landlordConfirmationStatus)
+        assertEquals("REC-20261029-ABCD", record.recordId)
+        assertEquals("farmer-777", record.farmerId)
+    }
+
+    @Test
+    fun testLandlordConfirmationStatusValues_allDiscreteAndNonBlocking() {
+        val statuses = LandlordStatus.values()
+        assertTrue(statuses.contains(LandlordStatus.NOT_REQUESTED))
+        assertTrue(statuses.contains(LandlordStatus.REQUESTED))
+        assertTrue(statuses.contains(LandlordStatus.CONFIRMED_VERBAL))
+        assertTrue(statuses.contains(LandlordStatus.CONFIRMED_WRITTEN))
+        assertTrue(statuses.contains(LandlordStatus.REFUSED))
+        assertTrue(statuses.contains(LandlordStatus.UNRESPONSIVE))
+
+        assertFalse(LandlordStatus.NOT_REQUESTED.isConfirmed())
+        assertFalse(LandlordStatus.REQUESTED.isConfirmed())
+        assertTrue(LandlordStatus.CONFIRMED_VERBAL.isConfirmed())
+        assertTrue(LandlordStatus.CONFIRMED_WRITTEN.isConfirmed())
+    }
 }
