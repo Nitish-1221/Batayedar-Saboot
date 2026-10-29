@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Agricultural Green & White Palette (Strict Contrast WCAG AA) -->
+    <color name="primary_green">#075B32</color>
+    <color name="primary_green_dark">#064E2B</color>
+    <color name="primary_green_heading">#064E2B</color>
+    <color name="primary_green_light">#E7F5E9</color>
+    <color name="primary_green_subtle">#F2F9F3</color>
+    <color name="primary_green_container">#DCEDC8</color>
+    <color name="secondary_green">#075B32</color>
+
+    <!-- Text Colors (High Contrast WCAG AA) -->
+    <color name="text_primary">#171C24</color>
+    <color name="text_secondary">#4B5563</color>
+    <color name="text_muted">#667085</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_link">#075B32</color>
+    <color name="disabled_text">#6B7280</color>
+
+    <!-- Input Field Palette -->
+    <color name="input_bg">#FFFFFF</color>
+    <color name="input_hint">#667085</color>
+    <color name="input_border">#647067</color>
+    <color name="input_border_focused">#075B32</color>
+
+    <!-- Surfaces & Neutrals -->
+    <color name="bg_screen">#F7F9F7</color>
+    <color name="bg_surface">#FFFFFF</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="card_stroke">#D0D7D1</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Semantic Status Colors -->
+    <color name="success_bg">#E7F5E9</color>
+    <color name="success_text">#14532D</color>
+    <color name="status_good">#14532D</color>
+    <color name="status_good_light">#E7F5E9</color>
+    <color name="error_text">#B42318</color>
+    <color name="status_bad">#B42318</color>
+    <color name="status_bad_light">#FEE4E2</color>
+    <color name="status_warning">#B54708</color>
+    <color name="status_warning_light">#FEF0C7</color>
+    <color name="status_neutral">#4B5563</color>
+    <color name="status_neutral_light">#F2F4F7</color>
+    <color name="accent_amber">#B54708</color>
+    <color name="accent_amber_light">#FEF0C7</color>
+</resources>

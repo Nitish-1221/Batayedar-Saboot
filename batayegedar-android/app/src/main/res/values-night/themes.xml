@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Inherit identical light themes in values-night to prevent inverted/washed-out styling on dark mode devices -->
+    <style name="Theme.Bataydar" parent="Theme.Material3.Light">
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryVariant">@color/primary_green_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorSecondary">@color/primary_green</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/input_border</item>
+        <item name="colorError">@color/error_text</item>
+        <item name="colorOnError">@color/white</item>
+
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/primary_green_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/input_hint</item>
+        <item name="editTextColor">@color/edit_text_color_selector</item>
+        <item name="android:editTextColor">@color/edit_text_color_selector</item>
+
+        <item name="actionBarStyle">@style/Widget.Bataydar.ActionBar</item>
+        <item name="actionBarTheme">@style/ThemeOverlay.Bataydar.ActionBar</item>
+
+        <item name="textInputStyle">@style/Widget.Bataydar.TextInputLayout</item>
+        <item name="editTextStyle">@style/Widget.Bataydar.TextInputEditText</item>
+        <item name="chipStyle">@style/Widget.Bataydar.Chip</item>
+        <item name="materialButtonStyle">@style/Widget.Bataydar.Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Bataydar.Button.Outlined</item>
+    </style>
+
+    <style name="Theme.Bataydar.NoActionBar" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryVariant">@color/primary_green_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorSecondary">@color/primary_green</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/input_border</item>
+        <item name="colorError">@color/error_text</item>
+        <item name="colorOnError">@color/white</item>
+
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/primary_green_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/input_hint</item>
+        <item name="editTextColor">@color/edit_text_color_selector</item>
+        <item name="android:editTextColor">@color/edit_text_color_selector</item>
+
+        <item name="textInputStyle">@style/Widget.Bataydar.TextInputLayout</item>
+        <item name="editTextStyle">@style/Widget.Bataydar.TextInputEditText</item>
+        <item name="chipStyle">@style/Widget.Bataydar.Chip</item>
+        <item name="materialButtonStyle">@style/Widget.Bataydar.Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Bataydar.Button.Outlined</item>
+    </style>
+</resources>

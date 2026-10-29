@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvCropType"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/primary_green_dark"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="Wheat / Gehun (गेहूँ)" />
+
+            <TextView
+                android:id="@+id/tvLandlordStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_neutral"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Landlord: Not Req."
+                android:textColor="@color/status_neutral"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvFieldName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/primary_green"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="Field: Purab Tola Plot #12" />
+
+        <TextView
+            android:id="@+id/tvDateAndLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            tools:text="Sowing Date: 2026-11-05 • Village: Bilsi, Badaun" />
+
+        <!-- Photo and GPS container -->
+        <LinearLayout
+            android:id="@+id/layoutPhotoAndGps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/bg_screen"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/ivThumb"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@color/primary_green_light"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_camera"
+                app:tint="@color/primary_green" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvGpsHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device-Recorded GPS Metadata"
+                    android:textColor="@color/primary_green_dark"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvGpsCoords"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    tools:text="27.538120°, 79.124500° (±6.4m)" />
+
+                <TextView
+                    android:id="@+id/tvCapturedTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    tools:text="Captured: 2026-10-28 11:20:15" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- No photo warning indicator -->
+        <TextView
+            android:id="@+id/tvNoPhotoWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_warning_rounded"
+            android:padding="8dp"
+            android:text="⚠️ No GPS evidence photo added yet. Tap to open and capture photo."
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

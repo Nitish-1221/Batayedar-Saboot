@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="24dp">
+
+        <!-- Top Header: Logo, App Name, Subtitle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/ivAppLogo"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:src="@drawable/ic_crop_field"
+                app:tint="@color/primary_green"
+                android:contentDescription="@string/app_name" />
+
+            <TextView
+                android:id="@+id/tvAppName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/app_name"
+                android:textColor="@color/primary_green_dark"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/app_subtitle_short"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnServerSettings"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginTop="2dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="Server Settings"
+                android:textSize="11sp"
+                android:textColor="@color/primary_green"
+                app:icon="@drawable/ic_settings"
+                app:iconSize="14dp"
+                app:iconTint="@color/primary_green" />
+
+            <TextView
+                android:id="@+id/tvMainHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/auth_heading_welcome"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Bataydar Login / Registration Card Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBataydarAuth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Section Label -->
+                <TextView
+                    android:id="@+id/tvBataydarSectionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/auth_bataydar_section_label"
+                    android:textColor="@color/primary_green_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- Full Name (Register mode only) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilFullName"
+                    style="@style/Widget.Bataydar.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:hint="@string/full_name_label"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFullName"
+                        style="@style/Widget.Bataydar.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:textColor="@color/edit_text_color_selector"
+                        android:textColorHint="@color/input_hint"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Phone / Email Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilIdentifier"
+                    style="@style/Widget.Bataydar.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:hint="@string/auth_email_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etIdentifier"
+                        style="@style/Widget.Bataydar.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:textColor="@color/edit_text_color_selector"
+                        android:textColorHint="@color/input_hint"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Phone Number (Register mode only) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPhone"
+                    style="@style/Widget.Bataydar.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:hint="@string/phone_number_label"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPhone"
+                        style="@style/Widget.Bataydar.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="phone"
+                        android:textColor="@color/edit_text_color_selector"
+                        android:textColorHint="@color/input_hint"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Password Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPassword"
+                    style="@style/Widget.Bataydar.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:hint="@string/auth_password_label"
+                    app:endIconMode="password_toggle"
+                    app:endIconTint="@color/primary_green">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        style="@style/Widget.Bataydar.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textColor="@color/edit_text_color_selector"
+                        android:textColorHint="@color/input_hint"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Forgot Password Link -->
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="14dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="4dp"
+                    android:text="@string/auth_forgot_password"
+                    android:textColor="@color/primary_green"
+                    android:textSize="13sp" />
+
+                <!-- Location Fields (Register mode only) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilVillage"
+                    style="@style/Widget.Bataydar.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:hint="@string/village_label"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etVillage"
+                        style="@style/Widget.Bataydar.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapWords"
+                        android:textColor="@color/edit_text_color_selector"
+                        android:textColorHint="@color/input_hint"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:id="@+id/layoutDistrictState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilDistrict"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:hint="@string/district_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDistrict"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilState"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:hint="@string/state_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etState"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginVertical="8dp"
+                    android:visibility="gone" />
+
+                <!-- Primary Green Bataydar Login / Register Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubmitBataydar"
+                    style="@style/Widget.Bataydar.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="@string/auth_btn_login_bataydar"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- Registration Toggle Link -->
+                <TextView
+                    android:id="@+id/tvToggleBataydarRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="14dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="6dp"
+                    android:text="@string/auth_link_create_bataydar"
+                    android:textColor="@color/primary_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Divider with OR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="18dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/divider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:text="@string/auth_divider_or"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/divider" />
+        </LinearLayout>
+
+        <!-- Outlined Button: Login as Landlord with Building/House Icon -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLoginLandlord"
+            style="@style/Widget.Bataydar.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/auth_btn_login_landlord"
+            android:textColor="@color/primary_green_dark"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:icon="@drawable/ic_home"
+            app:iconGravity="textStart"
+            app:iconPadding="10dp"
+            app:iconTint="@color/primary_green"
+            app:strokeColor="@color/primary_green"
+            app:strokeWidth="1.5dp" />
+
+        <!-- Optional offline fallback for farmers in remote fields -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContinueOffline"
+            style="@style/Widget.Bataydar.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/auth_btn_continue_offline"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp" />
+
+        <!-- Footer explaining landlord participation is optional -->
+        <TextView
+            android:id="@+id/tvFooterNotice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/auth_footer_optional_landlord"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</ScrollView>

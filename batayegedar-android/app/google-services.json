@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748220819600",
+    "project_id": "batayedar-saboot",
+    "storage_bucket": "batayedar-saboot.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748220819600:android:d4fbc90f5734bf04201015",
+        "android_client_info": {
+          "package_name": "org.bataydar.evidence"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSNff7U5gIlt5vjt0dp95R3hPj1dINZ1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

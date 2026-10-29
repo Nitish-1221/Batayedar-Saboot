@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_green"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/white"
+        app:title="@string/auth_landlord_heading"
+        app:titleTextColor="@color/white" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="24dp">
+
+            <!-- Landlord Emblem & Subheading -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:id="@+id/ivLandlordEmblem"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:src="@drawable/ic_landlord_building"
+                    app:tint="@color/primary_green"
+                    android:contentDescription="@string/auth_landlord_heading" />
+
+                <TextView
+                    android:id="@+id/tvLandlordTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/auth_landlord_heading"
+                    android:textColor="@color/primary_green_dark"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvLandlordSubheading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:text="@string/auth_landlord_subheading"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- Card Container -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Landlord Full Name (Register mode only) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilFullName"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="@string/full_name_label"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etFullName"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Email Address Field -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilIdentifier"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="@string/auth_email_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etIdentifier"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textEmailAddress"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Phone Number (Register mode only) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPhone"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="@string/phone_number_label"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPhone"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Password Field -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPassword"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:hint="@string/auth_password_label"
+                        app:endIconMode="password_toggle"
+                        app:endIconTint="@color/primary_green">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPassword"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPassword"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Forgot Password Link -->
+                    <TextView
+                        android:id="@+id/tvForgotPassword"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginBottom="14dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="4dp"
+                        android:text="@string/auth_forgot_password"
+                        android:textColor="@color/primary_green"
+                        android:textSize="13sp" />
+
+                    <!-- Village / Town (Register mode only) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilVillage"
+                        style="@style/Widget.Bataydar.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="@string/village_label"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etVillage"
+                            style="@style/Widget.Bataydar.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords"
+                            android:textColor="@color/edit_text_color_selector"
+                            android:textColorHint="@color/input_hint"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- District & State (Register mode only) -->
+                    <LinearLayout
+                        android:id="@+id/layoutDistrictState"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilDistrict"
+                            style="@style/Widget.Bataydar.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            android:hint="@string/district_label">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etDistrict"
+                                style="@style/Widget.Bataydar.TextInputEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textCapWords"
+                                android:textColor="@color/edit_text_color_selector"
+                                android:textColorHint="@color/input_hint"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilState"
+                            style="@style/Widget.Bataydar.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:hint="@string/state_label">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etState"
+                                style="@style/Widget.Bataydar.TextInputEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textCapWords"
+                                android:textColor="@color/edit_text_color_selector"
+                                android:textColorHint="@color/input_hint"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="8dp"
+                        android:visibility="gone" />
+
+                    <!-- Primary Green Landlord Submit Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSubmitLandlord"
+                        style="@style/Widget.Bataydar.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="@string/auth_btn_login"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <!-- Toggle Link: Create Landlord Account / Login -->
+                    <TextView
+                        android:id="@+id/tvToggleLandlordRegister"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="6dp"
+                        android:text="@string/auth_link_create_landlord"
+                        android:textColor="@color/primary_green"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

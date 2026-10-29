@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@color/primary_green_light"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_crop_field"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/primary_green" />
+
+        <TextView
+            android:id="@+id/tvCropType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvStatusBadge"
+            app:layout_constraintStart_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+            tools:text="Paddy / Rice (धान)" />
+
+        <TextView
+            android:id="@+id/tvFieldName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toBottomOf="@id/tvCropType"
+            tools:text="Khet No. 4 - Canal North" />
+
+        <TextView
+            android:id="@+id/tvDateAndLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toBottomOf="@id/tvFieldName"
+            tools:text="Sown: 2026-07-15 • Rampur" />
+
+        <TextView
+            android:id="@+id/tvStatusBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_badge_rounded"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:text="GPS Verified"
+            android:textColor="@color/status_good"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvCropType" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

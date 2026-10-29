@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Batayedar Saboot</string>
+    <string name="app_subtitle">Tenant Farmer Crop Cultivation Evidence App</string>
+    <string name="app_tagline">Your Hard Work, Your Independent Evidence</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_records">My Records</string>
+    <string name="nav_add">Add Evidence</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Welcome / Onboarding -->
+    <string name="welcome_title">Welcome to Batayedar Saboot</string>
+    <string name="welcome_body">Official land records (Khatauni / Khasra) show only the landowner\'s name. This app empowers you—the tenant farmer (Bataidar)—to independently record and document the crops you sow and nurture using verifiable GPS-geotagged photographs.</string>
+    <string name="feature_1_title">100% Offline &amp; Independent</string>
+    <string name="feature_1_desc">Works in remote fields without internet connection. GPS satellites connect directly to your device.</string>
+    <string name="feature_2_title">Mandatory GPS Geotagging</string>
+    <string name="feature_2_desc">Every crop photo is locked with device-verified GPS coordinates (&lt; 20m accuracy) and timestamps.</string>
+    <string name="feature_3_title">Legal Evidence Dossier</string>
+    <string name="feature_3_desc">Export tamper-evident PDF dossiers and full ZIP bundles with photographic proof whenever needed.</string>
+    <string name="btn_get_started">Get Started</string>
+    <string name="btn_already_registered">Continue to My Farm</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Cultivation Dashboard</string>
+    <string name="stat_fields">Fields Recorded</string>
+    <string name="stat_photos">Geotagged Photos</string>
+    <string name="stat_awaiting_landlord">Awaiting Landlord</string>
+    <string name="stat_synced">Cloud Sync Status</string>
+    <string name="btn_quick_add_evidence">Add Crop Evidence</string>
+    <string name="btn_view_all_records">View All Records</string>
+    <string name="recent_records_title">Recent Cultivation Records</string>
+    <string name="no_recent_records">No cultivation records added yet. Tap \'Add Crop Evidence\' to create your first crop record!</string>
+
+    <!-- Sync Statuses -->
+    <string name="sync_status_offline">Offline Mode (Local Safe)</string>
+    <string name="sync_status_pending">Pending Sync (%d items)</string>
+    <string name="sync_status_synced">Synced with Cloud</string>
+    <string name="sync_status_failed">Sync Failed (Will Retry)</string>
+    <string name="sync_banner_notice">All evidence is permanently stored on your phone. Cloud sync is optional and never deletes local data.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Farmer Profile</string>
+    <string name="profile_edit_title">Edit Farmer Profile</string>
+    <string name="farmer_id_label">Unique Farmer ID</string>
+    <string name="full_name_label">Full Name (किसान का नाम)</string>
+    <string name="phone_number_label">Mobile Phone Number</string>
+    <string name="village_label">Village (गाँव)</string>
+    <string name="district_label">District (ज़िला)</string>
+    <string name="state_label">State (राज्य)</string>
+    <string name="preferred_language_label">Preferred Language</string>
+    <string name="language_english">English</string>
+    <string name="language_hindi">हिन्दी (Hindi)</string>
+    <string name="btn_save_profile">Save Profile</string>
+    <string name="profile_saved_success">Profile saved successfully!</string>
+    <string name="error_name_required">Full name is required</string>
+    <string name="error_phone_invalid">Please enter a valid 10-digit mobile number</string>
+    <string name="error_village_required">Village is required</string>
+    <string name="error_district_required">District is required</string>
+    <string name="error_state_required">State is required</string>
+
+    <!-- Record Creation / Edit -->
+    <string name="add_record_title">New Cultivation Record</string>
+    <string name="edit_record_title">Edit Cultivation Record</string>
+    <string name="record_id_label">Record ID</string>
+    <string name="field_name_label">Field Name or Local Identifier</string>
+    <string name="field_name_hint">e.g. Uttari Talab Khet, Plot near Canal</string>
+    <string name="crop_type_label">Crop Cultivated</string>
+    <string name="crop_type_hint">Select or enter crop</string>
+    <string name="sowing_date_label">Cultivation / Sowing Date</string>
+    <string name="sowing_date_hint">YYYY-MM-DD</string>
+    <string name="field_desc_label">Field Description &amp; Notes (Optional)</string>
+    <string name="field_desc_hint">e.g., Soil type, neighboring landmarks, season (Kharif/Rabi/Zaid)</string>
+    <string name="landlord_name_label">Landowner Name (Optional)</string>
+    <string name="landlord_phone_label">Landowner Contact Number (Optional)</string>
+    <string name="btn_save_and_capture">Save &amp; Capture GPS Evidence</string>
+    <string name="btn_save_draft">Save Record</string>
+    <string name="independent_record_notice">Independent Record: Land ownership documents or landlord approval are NOT required to document your crops.</string>
+    <string name="field_name_helper">User-entered local name, separate from satellite GPS fix</string>
+    <string name="landlord_section_optional_title">Landowner Details (Completely Optional)</string>
+    <string name="landlord_section_optional_subtitle">Not required for legal cultivation documentation</string>
+    <string name="landlord_name_hint">Landowner Full Name (Optional)</string>
+    <string name="landlord_phone_hint">10-digit Phone Number (Optional)</string>
+    <string name="error_field_name_required">Field identifier is required</string>
+    <string name="error_crop_required">Crop type is required</string>
+    <string name="error_date_required">Sowing date is required</string>
+
+    <!-- Common Crops -->
+    <string name="crop_paddy">Paddy / Rice (धान)</string>
+    <string name="crop_wheat">Wheat (गेहूँ)</string>
+    <string name="crop_mustard">Mustard (सरसों)</string>
+    <string name="crop_sugarcane">Sugarcane (गन्ना)</string>
+    <string name="crop_maize">Maize (मक्का)</string>
+    <string name="crop_cotton">Cotton (कपास)</string>
+    <string name="crop_pulses">Pulses / Dal (दालें)</string>
+    <string name="crop_vegetables">Vegetables (सब्जियाँ)</string>
+    <string name="crop_potato">Potato (आलू)</string>
+    <string name="crop_other">Other Crop</string>
+
+    <!-- GPS Evidence Capture Workflow -->
+    <string name="gps_capture_title">Capture Geotagged Evidence</string>
+    <string name="gps_status_checking">Acquiring GPS Satellite Signal…</string>
+    <string name="gps_status_locked">GPS Verified (&lt; %1$.1fm accuracy)</string>
+    <string name="gps_status_weak">Accuracy too low (%1$.1fm, required &lt; %2$.0fm)</string>
+    <string name="gps_status_disabled">Device Location Services Disabled</string>
+    <string name="gps_status_stale">Location fix expired. Re-acquiring fresh fix…</string>
+    <string name="gps_open_settings">Enable GPS Settings</string>
+    <string name="gps_retry">Retry GPS Fix</string>
+    <string name="gps_indoor_tip">Under trees or indoors? Please step into an open area with a clear view of the sky for high-precision satellite lock.</string>
+    <string name="gps_latitude_label">Latitude</string>
+    <string name="gps_longitude_label">Longitude</string>
+    <string name="gps_accuracy_label">GPS Accuracy</string>
+    <string name="gps_freshness_label">Fix Age</string>
+    <string name="gps_timestamp_label">Capture Time</string>
+    <string name="btn_capture_photo">Capture Verified Photo</string>
+    <string name="capture_disabled_tooltip">Capture is locked until GPS fix is within 20 meters and fresh</string>
+    <string name="camera_permission_required">Camera permission is required to photograph your standing crops.</string>
+    <string name="location_permission_required">High-accuracy GPS location permission is strictly required to verify evidence on-site.</string>
+
+    <!-- Evidence Preview -->
+    <string name="evidence_preview_title">Verify Evidence Photograph</string>
+    <string name="evidence_preview_subtitle">Original photo preserved without tampering</string>
+    <string name="btn_confirm_evidence">Save Evidence to Record</string>
+    <string name="btn_retake_photo">Retake Photo</string>
+    <string name="meta_field_info">Crop Field</string>
+    <string name="meta_gps_coords">GPS Coordinates</string>
+    <string name="meta_accuracy">Accuracy Radius</string>
+    <string name="meta_time">Timestamp (Local &amp; UTC)</string>
+    <string name="meta_sha256">SHA-256 Digital Fingerprint</string>
+
+    <!-- Records List & Filter -->
+    <string name="records_title">My Cultivation Records</string>
+    <string name="search_records_hint">Search by crop, field, or village…</string>
+    <string name="filter_all">All</string>
+    <string name="filter_with_photos">With Evidence (%d)</string>
+    <string name="filter_pending_landlord">Awaiting Landlord (%d)</string>
+    <string name="filter_confirmed">Confirmed (%d)</string>
+    <string name="empty_records_search">No records found matching your query.</string>
+    <string name="empty_records_total">No records yet. Start by tapping the \'+\' button!</string>
+
+    <!-- Record Detail -->
+    <string name="record_detail_title">Cultivation Dossier</string>
+    <string name="tab_overview">Overview</string>
+    <string name="tab_evidence">Photos &amp; GPS (%d)</string>
+    <string name="tab_landlord">Landlord</string>
+    <string name="tab_export">Export &amp; Share</string>
+    <string name="btn_add_another_photo">Add Another Photo</string>
+    <string name="btn_record_landlord_status">Update Landlord Status</string>
+    <string name="btn_export_pdf">Export PDF Report</string>
+    <string name="btn_export_zip">Export Complete ZIP Bundle</string>
+    <string name="btn_delete_record">Delete Record</string>
+    <string name="confirm_delete_title">Delete Cultivation Record?</string>
+    <string name="confirm_delete_message">Are you sure you want to delete this record and all associated GPS evidence photos? This action cannot be undone.</string>
+
+    <!-- Landlord Confirmation (Optional) -->
+    <string name="landlord_section_title">Optional Landlord Confirmation</string>
+    <string name="landlord_explanation">Tenant farming is recognized even without formal landlord sign-off. Landlord confirmation is completely optional. If your landlord refuses or is unavailable, your GPS photographic evidence remains 100% valid.</string>
+    <string name="status_not_requested">Not Requested (Default)</string>
+    <string name="status_requested">Requested (Awaiting Response)</string>
+    <string name="status_confirmed_verbal">Confirmed (Verbal Acknowledgment)</string>
+    <string name="status_confirmed_written">Confirmed (Written / Digital Consent)</string>
+    <string name="status_refused">Declined / Refused by Landlord</string>
+    <string name="status_unresponsive">No Response</string>
+    <string name="landlord_notes_label">Confirmation Notes &amp; Details</string>
+    <string name="landlord_notes_hint">e.g., Spoke in presence of village sarpanch, or sent via WhatsApp</string>
+    <string name="btn_save_landlord_status">Update Confirmation</string>
+
+    <!-- Export & Dossier -->
+    <string name="export_title">Generate Evidence Dossier</string>
+    <string name="export_desc">Generate a tamper-evident PDF dossier or a complete ZIP package containing high-resolution photographs, metadata, and checksums.</string>
+    <string name="export_pdf_button">Generate &amp; Share PDF</string>
+    <string name="export_zip_button">Generate &amp; Share ZIP Bundle</string>
+    <string name="export_disclaimer_title">Legal Notice &amp; Disclaimer</string>
+    <string name="legal_disclaimer_text">This report is a collection of farmer-provided information and supporting evidence. GPS metadata and photographs do not independently establish land ownership, legal tenancy, or legal entitlement. The legal significance of this evidence depends on applicable state laws and assessment by the relevant authorities.</string>
+    <string name="export_progress">Preparing dossier files…</string>
+    <string name="export_success">Evidence dossier created successfully!</string>
+    <string name="btn_share">Share via WhatsApp / Email</string>
+    <string name="btn_open_file">Open File</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings &amp; App Info</string>
+    <string name="settings_language">Language / भाषा</string>
+    <string name="settings_accuracy_threshold">GPS Accuracy Threshold</string>
+    <string name="settings_accuracy_summary">Current: 20 meters (recommended for open fields)</string>
+    <string name="settings_permissions">Permissions Status</string>
+    <string name="settings_about">About Batayedar Saboot</string>
+    <string name="settings_about_desc">Built to safeguard tenant farmers\' rights through tamper-evident digital crop documentation.</string>
+    <string name="settings_version">Version 1.0.0 (Build 2026)</string>
+
+    <!-- Common Buttons & Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_close">Close</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_back">Back</string>
+    <!-- Authentication & Cloud Account -->
+    <string name="auth_title_login">Farmer Login</string>
+    <string name="auth_title_register">Farmer Registration</string>
+    <string name="auth_tab_login">Log In</string>
+    <string name="auth_tab_register">Register</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_hint">Enter password (min 6 characters)</string>
+    <string name="auth_btn_login">Log In</string>
+    <string name="auth_btn_register">Create Farmer Account</string>
+    <string name="auth_btn_continue_offline">Continue in Offline Mode</string>
+    <string name="auth_offline_notice">Cloud login is optional. All crops and photos can be created and exported completely offline without an internet connection.</string>
+    <string name="auth_error_password_short">Password must be at least 6 characters</string>
+    <string name="auth_login_success">Logged in successfully!</string>
+    <string name="auth_register_success">Account registered successfully!</string>
+    <string name="btn_sync_now">Sync Now</string>
+    <string name="sync_in_progress">Synchronization in progress…</string>
+    <string name="sync_complete">Synchronization complete!</string>
+    <string name="sync_failed">Sync failed. Will retry automatically.</string>
+
+    <string name="loading">Loading…</string>
+
+    <!-- Role-Based Authentication Strings -->
+    <string name="app_subtitle_short">Document cultivation. Preserve evidence.</string>
+    <string name="auth_heading_welcome">Welcome Back</string>
+    <string name="auth_bataydar_section_label">Bataydar Login</string>
+    <string name="auth_btn_login_bataydar">Login as Bataydar</string>
+    <string name="auth_link_create_bataydar">Create Bataydar Account</string>
+    <string name="auth_divider_or">OR</string>
+    <string name="auth_btn_login_landlord">Login as Landlord</string>
+    <string name="auth_footer_optional_landlord">Landlord participation is optional for a farmer to collect crop evidence.</string>
+    <string name="auth_landlord_heading">Landlord Login</string>
+    <string name="auth_landlord_subheading">Landowner portal for crop cultivation acknowledgment</string>
+    <string name="auth_link_create_landlord">Create Landlord Account</string>
+    <string name="auth_link_already_landlord">Already have a Landlord account? Login</string>
+    <string name="auth_link_already_bataydar">Already have a Bataydar account? Login</string>
+    <string name="auth_landlord_register_heading">Landlord Registration</string>
+    <string name="auth_btn_register_landlord">Create Landlord Account</string>
+    <string name="auth_identifier_hint">Mobile Number or Email</string>
+    <string name="auth_error_role_mismatch_landlord">Account is registered as a Landlord. Please use Landlord login.</string>
+    <string name="auth_error_role_mismatch_bataydar">Account is registered as a Bataydar. Please use Bataydar login.</string>
+    <string name="auth_role_badge_bataydar">Tenant Farmer (बटाईदार)</string>
+    <string name="auth_role_badge_landlord">Landowner (भूस्वामी)</string>
+
+    <!-- Landlord Dashboard & Review Portal -->
+    <string name="landlord_portal_title">Landlord Portal</string>
+    <string name="landlord_nav_dashboard">Dashboard</string>
+    <string name="landlord_nav_requests">Requests</string>
+    <string name="landlord_nav_history">History</string>
+    <string name="landlord_nav_profile">Profile</string>
+    <string name="landlord_stat_pending">Pending Requests</string>
+    <string name="landlord_stat_completed">Completed</string>
+    <string name="landlord_stat_total">Total Requests</string>
+    <string name="landlord_recent_activity">Recent Confirmation Activity</string>
+    <string name="landlord_no_recent_activity">No recent confirmation activity.</string>
+    <string name="landlord_filter_all">All Requests</string>
+    <string name="landlord_filter_pending">Pending Review</string>
+    <string name="landlord_filter_confirmed">Confirmed</string>
+    <string name="landlord_filter_declined">Declined</string>
+    <string name="landlord_empty_requests">No confirmation requests found for your account.</string>
+    <string name="landlord_review_title">Review Cultivation Evidence</string>
+    <string name="landlord_farmer_declared_header">Farmer-Provided Cultivation Details</string>
+    <string name="landlord_farmer_declared_sub">The following crop and field details were declared by the tenant farmer:</string>
+    <string name="landlord_verified_telemetry_header">Independently Verified GPS Evidence</string>
+    <string name="landlord_verified_telemetry_sub">The following evidence was verified by on-device GPS hardware and cryptographic hash:</string>
+    <string name="landlord_action_confirm">Acknowledge &amp; Confirm Cultivation</string>
+    <string name="landlord_action_decline">Decline Confirmation</string>
+    <string name="landlord_decision_prompt">Select Confirmation Response:</string>
+    <string name="landlord_notes_optional">Landlord Response &amp; Remarks (Optional)</string>
+    <string name="landlord_witness_optional">Witness Name (Optional)</string>
+    <string name="landlord_btn_submit_decision">Submit Confirmation Response</string>
+    <string name="landlord_response_recorded">Response Recorded: %s</string>
+    <string name="landlord_response_success">Response recorded successfully!</string>
+    <string name="landlord_already_responded">This confirmation request has already been responded to.</string>
+    <string name="landlord_history_title">Confirmation History</string>
+    <string name="landlord_history_empty">No completed confirmations in history.</string>
+    <string name="landlord_profile_title">Landlord Profile</string>
+    <string name="btn_logout">Logout</string>
+    <string name="logout_confirm_title">Confirm Logout</string>
+    <string name="logout_confirm_message">Are you sure you want to securely log out from this device?</string>
+
+    <!-- Firebase Authentication & Password Reset -->
+    <string name="auth_forgot_password">Forgot Password?</string>
+    <string name="auth_forgot_password_title">Reset Password</string>
+    <string name="auth_forgot_password_msg">Enter your registered email address to receive password reset instructions.</string>
+    <string name="auth_btn_send_reset">Send Reset Email</string>
+    <string name="auth_reset_email_sent">Password reset email sent! Please check your inbox.</string>
+    <string name="auth_error_email_invalid">Please enter a valid email address</string>
+    <string name="auth_error_network">Internet connection required for login. Please check your network connection.</string>
+    <string name="auth_email_label">Email Address</string>
+</resources>

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Photo Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@android:color/black"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:id="@+id/ivPreview"
+                android:layout_width="match_parent"
+                android:layout_height="280dp"
+                android:scaleType="fitCenter" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Mandatory GPS Metadata Card (Read-Only) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/primary_green_light"
+            app:strokeWidth="1.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="@color/status_good" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="GPS-Verified Metadata (Non-Editable)"
+                        android:textColor="@color/primary_green_dark"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
+
+                <!-- Coordinates -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/meta_gps_coords"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvCoordinates"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="27.538120°, 79.124500°" />
+
+                <!-- Accuracy -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/meta_accuracy"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvAccuracy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/status_good"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="±6.4 meters (Verified Satellite Signal)" />
+
+                <!-- Capture Time -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/meta_time"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvTimestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    tools:text="Local: 2026-10-28 11:45:22 IST" />
+
+                <!-- SHA-256 Hash -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/meta_sha256"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvSha256"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="middle"
+                    android:singleLine="true"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    tools:text="a4f9e2b1093c8d... (Verifiable)" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Optional Observation Notes -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilNotes"
+            style="@style/Widget.Bataydar.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="Evidence Notes (Optional)"
+            app:placeholderText="e.g. Standing crop flowering stage, eastern border"
+            app:placeholderTextColor="@color/input_hint">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNotes"
+                style="@style/Widget.Bataydar.TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:lines="2"
+                android:textColor="@color/edit_text_color_selector"
+                android:textColorHint="@color/input_hint"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Confirm Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConfirmEvidence"
+            style="@style/Widget.Bataydar.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_confirm_evidence"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:icon="@drawable/ic_check_circle"
+            app:iconGravity="textStart" />
+
+        <!-- Retake Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetakePhoto"
+            style="@style/Widget.Bataydar.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_retake_photo"
+            android:textColor="@color/error_text"
+            android:textSize="15sp"
+            app:iconTint="@color/error_text"
+            app:strokeColor="@color/error_text" />
+
+    </LinearLayout>
+</ScrollView>

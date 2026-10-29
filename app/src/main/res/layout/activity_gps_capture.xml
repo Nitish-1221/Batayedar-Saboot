@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- CameraX Preview -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Top Overlay: Back button & Title -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#80000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/text_on_primary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvCaptureTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gps_capture_title"
+                android:textColor="@color/text_on_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvRecordInfoPill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#E0E0E0"
+                android:textSize="12sp"
+                tools:text="Paddy • Purab Tola" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom GPS Control HUD Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardGpsHud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="#F018261A"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:strokeColor="#5081C784"
+        app:strokeWidth="1.5dp"
+        app:layout_constraintBottom_toTopOf="@id/shutterLayout">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- GPS Status Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivGpsStatusIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_gps_fixed"
+                    app:tint="@color/status_warning" />
+
+                <TextView
+                    android:id="@+id/tvGpsStatusText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:text="@string/gps_status_checking"
+                    android:textColor="@color/text_on_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/pbGpsAcquiring"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:indeterminateTint="@color/primary_green_light" />
+            </LinearLayout>
+
+            <!-- Coordinate readouts -->
+            <LinearLayout
+                android:id="@+id/layoutCoordinates"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#40000000"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvLatLong"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Lat: --.------  Long: --.------"
+                        android:textColor="@color/text_on_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvAccuracyBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="±--m"
+                        android:textColor="@color/status_warning"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvFreshnessAndProvider"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Signal Age: --s • Source: Hardware GPS Satellites"
+                    android:textColor="@color/primary_green_light"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Indoor / Low reception tip -->
+            <TextView
+                android:id="@+id/tvIndoorTip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/gps_indoor_tip"
+                android:textColor="#ECEFF1"
+                android:textSize="11sp" />
+
+            <!-- Action buttons for settings / retry -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenGpsSettings"
+                    style="@style/Widget.Bataydar.Button.Primary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:text="@string/gps_open_settings"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRetryGps"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/gps_retry"
+                    android:textColor="@color/text_on_primary"
+                    android:textSize="12sp"
+                    app:strokeColor="@color/primary_green_light" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Shutter & Controls Bottom Bar -->
+    <LinearLayout
+        android:id="@+id/shutterLayout"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="#CC000000"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Shutter Button: Locked until GPS fix is valid -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnCaptureShutter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/primary_green"
+            android:contentDescription="@string/btn_capture_photo"
+            android:enabled="false"
+            app:fabCustomSize="72dp"
+            app:maxImageSize="36dp"
+            app:srcCompat="@drawable/ic_camera"
+            app:tint="@color/text_on_primary" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

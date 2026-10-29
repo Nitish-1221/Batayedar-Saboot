@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">बटाईदार सबूत</string>
+    <string name="app_subtitle">बटाईदार किसान फसल प्रमाण ऐप</string>
+    <string name="app_tagline">आपकी कड़ी मेहनत, आपका स्वतंत्र सबूत</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_records">मेरे रिकॉर्ड</string>
+    <string name="nav_add">सबूत जोड़ें</string>
+    <string name="nav_profile">प्रोफ़ाइल</string>
+    <string name="nav_settings">सेटिंग्स</string>
+
+    <!-- Welcome / Onboarding -->
+    <string name="welcome_title">बटाईदार सबूत में आपका स्वागत है</string>
+    <string name="welcome_body">सरकारी भूमि रिकॉर्ड (खतौनी/खसरा) में केवल ज़मींदार का नाम होता है। यह ऐप आपको—बटाईदार किसान को—सत्यापित जीपीएस फोटो के ज़रिए अपनी बोई और सींची गई फसलों का स्वतंत्र दस्तावेज़ीकरण करने में सक्षम बनाता है।</string>
+    <string name="feature_1_title">100% ऑफ़लाइन और स्वतंत्र</string>
+    <string name="feature_1_desc">बिना इंटरनेट के दूरदराज के खेतों में काम करता है। जीपीएस सीधे उपग्रहों से जुड़ता है।</string>
+    <string name="feature_2_title">अनिवार्य जीपीएस जियोटैगिंग</string>
+    <string name="feature_2_desc">हर फसल फोटो में डिवाइस द्वारा सत्यापित जीपीएस निर्देशांक (&lt; 20 मीटर सटीकता) और समय दर्ज होता है।</string>
+    <string name="feature_3_title">कानूनी साक्ष्य डोज़ियर</string>
+    <string name="feature_3_desc">ज़रूरत पड़ने पर फोटो साक्ष्य के साथ प्रमाणित पीडीएफ और ज़िप बंडल निर्यात करें।</string>
+    <string name="btn_get_started">शुरू करें</string>
+    <string name="btn_already_registered">मेरे खेत पर जाएं</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">खेती डैशबोर्ड</string>
+    <string name="stat_fields">कुल दर्ज खेत</string>
+    <string name="stat_photos">जियोटैग फोटो</string>
+    <string name="stat_awaiting_landlord">मालिक पुष्टि प्रतीक्षित</string>
+    <string name="stat_synced">क्लाउड सिंक स्थिति</string>
+    <string name="btn_quick_add_evidence">फसल सबूत जोड़ें</string>
+    <string name="btn_view_all_records">सभी रिकॉर्ड देखें</string>
+    <string name="recent_records_title">हालिया फसल रिकॉर्ड</string>
+    <string name="no_recent_records">अभी कोई फसल रिकॉर्ड नहीं है। अपना पहला रिकॉर्ड बनाने के लिए \'फसल सबूत जोड़ें\' पर टैप करें!</string>
+
+    <!-- Sync Statuses -->
+    <string name="sync_status_offline">ऑफ़लाइन मोड (सुरक्षित स्थानीय संग्रह)</string>
+    <string name="sync_status_pending">सिंक प्रतीक्षित (%d आइटम)</string>
+    <string name="sync_status_synced">क्लाउड से सिंक किया गया</string>
+    <string name="sync_status_failed">सिंक विफल (पुनः प्रयास होगा)</string>
+    <string name="sync_banner_notice">सभी साक्ष्य आपके फ़ोन में हमेशा सुरक्षित रहते हैं। क्लाउड सिंक वैकल्पिक है और स्थानीय डेटा कभी नहीं मिटता।</string>
+
+    <!-- Profile -->
+    <string name="profile_title">किसान प्रोफ़ाइल</string>
+    <string name="profile_edit_title">किसान प्रोफ़ाइल बदलें</string>
+    <string name="farmer_id_label">विशिष्ट किसान आईडी</string>
+    <string name="full_name_label">पूरा नाम</string>
+    <string name="phone_number_label">मोबाइल नंबर</string>
+    <string name="village_label">गाँव</string>
+    <string name="district_label">ज़िला</string>
+    <string name="state_label">राज्य</string>
+    <string name="preferred_language_label">पसंदीदा भाषा</string>
+    <string name="language_english">English (अंग्रेज़ी)</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="btn_save_profile">प्रोफ़ाइल सुरक्षित करें</string>
+    <string name="profile_saved_success">प्रोफ़ाइल सफलतापूर्वक सहेजी गई!</string>
+    <string name="error_name_required">पूरा नाम आवश्यक है</string>
+    <string name="error_phone_invalid">कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें</string>
+    <string name="error_village_required">गाँव का नाम आवश्यक है</string>
+    <string name="error_district_required">ज़िला आवश्यक है</string>
+    <string name="error_state_required">राज्य आवश्यक है</string>
+
+    <!-- Record Creation / Edit -->
+    <string name="add_record_title">नया फसल रिकॉर्ड</string>
+    <string name="edit_record_title">फसल रिकॉर्ड बदलें</string>
+    <string name="record_id_label">रिकॉर्ड आईडी</string>
+    <string name="field_name_label">खेत का नाम या स्थानीय पहचान</string>
+    <string name="field_name_hint">उदा. उत्तरी तालाब वाला खेत, नहर के पास का खेत</string>
+    <string name="crop_type_label">बोई गई फसल</string>
+    <string name="crop_type_hint">फसल चुनें या दर्ज करें</string>
+    <string name="sowing_date_label">बुवाई / खेती की तारीख</string>
+    <string name="sowing_date_hint">YYYY-MM-DD</string>
+    <string name="field_desc_label">खेत का विवरण और नोट्स (वैकल्पिक)</string>
+    <string name="field_desc_hint">उदा. मिट्टी का प्रकार, पास का लैंडमार्क, मौसम (खरीफ/रबी/जायद)</string>
+    <string name="landlord_name_label">ज़मींदार का नाम (वैकल्पिक)</string>
+    <string name="landlord_phone_label">ज़मींदार का फ़ोन नंबर (वैकल्पिक)</string>
+    <string name="btn_save_and_capture">सहेजें और जीपीएस सबूत लें</string>
+    <string name="btn_save_draft">रिकॉर्ड सहेजें</string>
+    <string name="independent_record_notice">स्वतंत्र रिकॉर्ड: आपकी फसल दर्ज करने के लिए भूमि स्वामित्व दस्तावेज या भूस्वामी की मंजूरी की कोई आवश्यकता नहीं है।</string>
+    <string name="field_name_helper">उपयोगकर्ता द्वारा दर्ज स्थानीय नाम, जो जीपीएस स्थिति से अलग है</string>
+    <string name="landlord_section_optional_title">भूस्वामी का विवरण (पूर्णतः वैकल्पिक)</string>
+    <string name="landlord_section_optional_subtitle">वैध फसल दस्तावेजीकरण के लिए आवश्यक नहीं</string>
+    <string name="landlord_name_hint">भूस्वामी का पूरा नाम (वैकल्पिक)</string>
+    <string name="landlord_phone_hint">10-अंकों का मोबाइल नंबर (वैकल्पिक)</string>
+    <string name="error_field_name_required">खेत की पहचान आवश्यक है</string>
+    <string name="error_crop_required">फसल का प्रकार आवश्यक है</string>
+    <string name="error_date_required">बुवाई की तारीख आवश्यक है</string>
+
+    <!-- Common Crops -->
+    <string name="crop_paddy">धान (Paddy)</string>
+    <string name="crop_wheat">गेहूँ (Wheat)</string>
+    <string name="crop_mustard">सरसों (Mustard)</string>
+    <string name="crop_sugarcane">गन्ना (Sugarcane)</string>
+    <string name="crop_maize">मक्का (Maize)</string>
+    <string name="crop_cotton">कपास (Cotton)</string>
+    <string name="crop_pulses">दालें (Pulses)</string>
+    <string name="crop_vegetables">सब्जियाँ (Vegetables)</string>
+    <string name="crop_potato">आलू (Potato)</string>
+    <string name="crop_other">अन्य फसल</string>
+
+    <!-- GPS Evidence Capture Workflow -->
+    <string name="gps_capture_title">जियोटैग सबूत फोटो लें</string>
+    <string name="gps_status_checking">जीपीएस उपग्रह सिग्नल खोजा जा रहा है…</string>
+    <string name="gps_status_locked">जीपीएस सत्यापित (&lt; %1$.1f मी. सटीकता)</string>
+    <string name="gps_status_weak">सटीकता कम है (%1$.1f मी., आवश्यक &lt; %2$.0f मी.)</string>
+    <string name="gps_status_disabled">डिवाइस लोकेशन सेवा बंद है</string>
+    <string name="gps_status_stale">लोकेशन सिग्नल पुराना हो गया। ताज़ा सिग्नल लिया जा रहा है…</string>
+    <string name="gps_open_settings">जीपीएस सेटिंग्स खोलें</string>
+    <string name="gps_retry">पुनः जीपीएस खोजें</string>
+    <string name="gps_indoor_tip">पेड़ों के नीचे या कमरे में हैं? कृपया खुले आसमान के नीचे आएं ताकि उपग्रह से सटीक सिग्नल मिल सके।</string>
+    <string name="gps_latitude_label">अक्षांश (Latitude)</string>
+    <string name="gps_longitude_label">देशांतर (Longitude)</string>
+    <string name="gps_accuracy_label">जीपीएस सटीकता</string>
+    <string name="gps_freshness_label">सिग्नल समय</string>
+    <string name="gps_timestamp_label">तारीख व समय</string>
+    <string name="btn_capture_photo">सत्यापित फोटो खींचें</string>
+    <string name="capture_disabled_tooltip">फोटो बटन तब तक लॉक रहेगा जब तक जीपीएस सटीकता 20 मीटर के भीतर न हो</string>
+    <string name="camera_permission_required">खेत में खड़ी फसल की फोटो लेने के लिए कैमरा अनुमति आवश्यक है।</string>
+    <string name="location_permission_required">मौके पर साक्ष्य सत्यापित करने के लिए सटीक जीपीएस लोकेशन अनुमति अनिवार्य है।</string>
+
+    <!-- Evidence Preview -->
+    <string name="evidence_preview_title">साक्ष्य फोटो की पुष्टि करें</string>
+    <string name="evidence_preview_subtitle">मूल फोटो बिना किसी बदलाव के सुरक्षित रहेगी</string>
+    <string name="btn_confirm_evidence">रिकॉर्ड में सबूत सहेजें</string>
+    <string name="btn_retake_photo">दोबारा फोटो लें</string>
+    <string name="meta_field_info">फसल खेत</string>
+    <string name="meta_gps_coords">जीपीएस निर्देशांक</string>
+    <string name="meta_accuracy">सटीकता दायरा</string>
+    <string name="meta_time">समय (स्थानीय एवं यूटीसी)</string>
+    <string name="meta_sha256">SHA-256 डिजिटल फ़िंगरप्रिंट</string>
+
+    <!-- Records List & Filter -->
+    <string name="records_title">मेरे फसल रिकॉर्ड</string>
+    <string name="search_records_hint">फसल, खेत या गाँव से खोजें…</string>
+    <string name="filter_all">सभी</string>
+    <string name="filter_with_photos">सबूत सहित (%d)</string>
+    <string name="filter_pending_landlord">मालिक प्रतीक्षित (%d)</string>
+    <string name="filter_confirmed">पुष्ट (%d)</string>
+    <string name="empty_records_search">कोई रिकॉर्ड नहीं मिला।</string>
+    <string name="empty_records_total">अभी कोई रिकॉर्ड नहीं है। \'+\' बटन दबाकर शुरुआत करें!</string>
+
+    <!-- Record Detail -->
+    <string name="record_detail_title">खेती साक्ष्य डोज़ियर</string>
+    <string name="tab_overview">विवरण</string>
+    <string name="tab_evidence">फोटो और जीपीएस (%d)</string>
+    <string name="tab_landlord">ज़मींदार</string>
+    <string name="tab_export">निर्यात और साझा</string>
+    <string name="btn_add_another_photo">एक और फोटो जोड़ें</string>
+    <string name="btn_record_landlord_status">ज़मींदार पुष्टि स्थिति बदलें</string>
+    <string name="btn_export_pdf">पीडीएफ रिपोर्ट बनाएं</string>
+    <string name="btn_export_zip">पूर्ण ज़िप पैकेज बनाएं</string>
+    <string name="btn_delete_record">रिकॉर्ड हटाएं</string>
+    <string name="confirm_delete_title">फसल रिकॉर्ड हटाएं?</string>
+    <string name="confirm_delete_message">क्या आप वाकई इस रिकॉर्ड और सभी जीपीएस फोटो साक्ष्य को हटाना चाहते हैं? यह वापस नहीं लाया जा सकता।</string>
+
+    <!-- Landlord Confirmation (Optional) -->
+    <string name="landlord_section_title">वैकल्पिक ज़मींदार पुष्टि</string>
+    <string name="landlord_explanation">बटाईदारी खेती को ज़मींदार के औपचारिक हस्ताक्षर के बिना भी मान्यता दी जाती है। ज़मींदार की पुष्टि पूर्णतः वैकल्पिक है। यदि ज़मींदार मना करता है या जवाब नहीं देता, तब भी आपका जीपीएस फोटो साक्ष्य 100% मान्य है।</string>
+    <string name="status_not_requested">अनुरोध नहीं किया गया (डिफ़ॉल्ट)</string>
+    <string name="status_requested">अनुरोध किया गया (प्रतीक्षारत)</string>
+    <string name="status_confirmed_verbal">पुष्ट (मौखिक सहमति)</string>
+    <string name="status_confirmed_written">पुष्ट (लिखित / डिजिटल सहमति)</string>
+    <string name="status_refused">ज़मींदार द्वारा अस्वीकृत</string>
+    <string name="status_unresponsive">कोई उत्तर नहीं मिला</string>
+    <string name="landlord_notes_label">पुष्टि विवरण व नोट्स</string>
+    <string name="landlord_notes_hint">उदा. सरपंच की उपस्थिति में बात हुई, अथवा व्हाट्सऐप पर भेजा गया</string>
+    <string name="btn_save_landlord_status">स्थिति अपडेट करें</string>
+
+    <!-- Export & Dossier -->
+    <string name="export_title">साक्ष्य डोज़ियर बनाएं</string>
+    <string name="export_desc">मूल फोटो, निर्देशांक, और चेकसम के साथ पीडीएफ अथवा संपूर्ण ज़िप बंडल तैयार करें।</string>
+    <string name="export_pdf_button">पीडीएफ बनाएं और साझा करें</string>
+    <string name="export_zip_button">ज़िप पैकेज बनाएं और साझा करें</string>
+    <string name="export_disclaimer_title">कानूनी सूचना एवं अस्वीकरण</string>
+    <string name="legal_disclaimer_text">यह रिपोर्ट किसान द्वारा दी गई जानकारी और सहायक साक्ष्यों का संकलन है। जीपीएस मेटाडेटा और तस्वीरें स्वतंत्र रूप से भूमि स्वामित्व, कानूनी किरायेदारी या कानूनी पात्रता स्थापित नहीं करती हैं। इस साक्ष्य का कानूनी महत्व लागू राज्य कानूनों और संबंधित अधिकारियों के मूल्यांकन पर निर्भर करता है।</string>
+    <string name="export_progress">डोज़ियर तैयार हो रहा है…</string>
+    <string name="export_success">साक्ष्य डोज़ियर सफलतापूर्वक तैयार!</string>
+    <string name="btn_share">व्हाट्सऐप / ईमेल से साझा करें</string>
+    <string name="btn_open_file">फ़ाइल खोलें</string>
+
+    <!-- Settings -->
+    <string name="settings_title">सेटिंग्स एवं जानकारी</string>
+    <string name="settings_language">भाषा (Language)</string>
+    <string name="settings_accuracy_threshold">जीपीएस सटीकता सीमा</string>
+    <string name="settings_accuracy_summary">वर्तमान: 20 मीटर (खुले खेतों के लिए अनुशंसित)</string>
+    <string name="settings_permissions">अनुमति स्थिति</string>
+    <string name="settings_about">बटाईदार सबूत के बारे में</string>
+    <string name="settings_about_desc">बटाईदार किसानों के अधिकारों की सुरक्षा और स्वतंत्र डिजिटल फसल प्रलेखीकरण के लिए समर्पित।</string>
+    <string name="settings_version">संस्करण 1.0.0 (2026)</string>
+
+    <!-- Common Buttons & Actions -->
+    <string name="action_save">सहेजें</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_retry">पुनः प्रयास</string>
+    <string name="action_close">बंद करें</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_back">पीछे</string>
+    <!-- Authentication & Cloud Account -->
+    <string name="auth_title_login">किसान लॉगिन</string>
+    <string name="auth_title_register">किसान पंजीकरण</string>
+    <string name="auth_tab_login">लॉगिन</string>
+    <string name="auth_tab_register">नया खाता</string>
+    <string name="auth_password_label">पासवर्ड</string>
+    <string name="auth_password_hint">पासवर्ड दर्ज करें (कम से कम 6 अक्षर)</string>
+    <string name="auth_btn_login">लॉगिन करें</string>
+    <string name="auth_btn_register">खाता बनाएं</string>
+    <string name="auth_btn_continue_offline">ऑफ़लाइन मोड में आगे बढ़ें</string>
+    <string name="auth_offline_notice">क्लाउड लॉगिन वैकल्पिक है। आप बिना इंटरनेट के भी सभी फसलें और फोटो 100% ऑफ़लाइन दर्ज कर सकते हैं।</string>
+    <string name="auth_error_password_short">पासवर्ड कम से कम 6 अक्षरों का होना चाहिए</string>
+    <string name="auth_login_success">सफलतापूर्वक लॉगिन हो गया!</string>
+    <string name="auth_register_success">खाता सफलतापूर्वक पंजीकृत!</string>
+    <string name="btn_sync_now">अभी सिंक करें</string>
+    <string name="sync_in_progress">सिंक हो रहा है…</string>
+    <string name="sync_complete">सिंक पूर्ण हुआ!</string>
+    <string name="sync_failed">सिंक विफल। स्वचालित पुनः प्रयास होगा।</string>
+
+    <string name="loading">लोड हो रहा है…</string>
+
+    <!-- Role-Based Authentication Strings -->
+    <string name="app_subtitle_short">फसल बुवाई दस्तावेज़। साक्ष्य सुरक्षा।</string>
+    <string name="auth_heading_welcome">वापसी पर स्वागत है</string>
+    <string name="auth_bataydar_section_label">बटाईदार लॉगिन</string>
+    <string name="auth_btn_login_bataydar">बटाईदार के रूप में लॉगिन करें</string>
+    <string name="auth_link_create_bataydar">बटाईदार खाता बनाएं</string>
+    <string name="auth_divider_or">या</string>
+    <string name="auth_btn_login_landlord">भूस्वामी के रूप में लॉगिन करें</string>
+    <string name="auth_footer_optional_landlord">फसल साक्ष्य जुटाने के लिए किसान हेतु भूस्वामी की भागीदारी पूर्णतः वैकल्पिक है।</string>
+    <string name="auth_landlord_heading">भूस्वामी लॉगिन</string>
+    <string name="auth_landlord_subheading">फसल बुवाई पावती हेतु भूस्वामी पोर्टल</string>
+    <string name="auth_link_create_landlord">भूस्वामी खाता बनाएं</string>
+    <string name="auth_link_already_landlord">पहले से भूस्वामी खाता है? लॉगिन करें</string>
+    <string name="auth_link_already_bataydar">पहले से बटाईदार खाता है? लॉगिन करें</string>
+    <string name="auth_landlord_register_heading">भूस्वामी पंजीकरण</string>
+    <string name="auth_btn_register_landlord">भूस्वामी खाता बनाएं</string>
+    <string name="auth_identifier_hint">मोबाइल नंबर या ईमेल</string>
+    <string name="auth_error_role_mismatch_landlord">यह खाता भूस्वामी के रूप में पंजीकृत है। कृपया भूस्वामी लॉगिन का उपयोग करें।</string>
+    <string name="auth_error_role_mismatch_bataydar">यह खाता बटाईदार के रूप में पंजीकृत है। कृपया बटाईदार लॉगिन का उपयोग करें।</string>
+    <string name="auth_role_badge_bataydar">बटाईदार किसान (Tenant Farmer)</string>
+    <string name="auth_role_badge_landlord">भूस्वामी / ज़मींदार (Landowner)</string>
+
+    <!-- Landlord Dashboard & Review Portal -->
+    <string name="landlord_portal_title">भूस्वामी पोर्टल</string>
+    <string name="landlord_nav_dashboard">डैशबोर्ड</string>
+    <string name="landlord_nav_requests">अनुरोध</string>
+    <string name="landlord_nav_history">इतिहास</string>
+    <string name="landlord_nav_profile">प्रोफ़ाइल</string>
+    <string name="landlord_stat_pending">प्रतीक्षित अनुरोध</string>
+    <string name="landlord_stat_completed">पूर्ण पावतियां</string>
+    <string name="landlord_stat_total">कुल अनुरोध</string>
+    <string name="landlord_recent_activity">हालिया पुष्टि गतिविधियाँ</string>
+    <string name="landlord_no_recent_activity">कोई हालिया पुष्टि गतिविधि नहीं है।</string>
+    <string name="landlord_filter_all">सभी अनुरोध</string>
+    <string name="landlord_filter_pending">प्रतीक्षित</string>
+    <string name="landlord_filter_confirmed">स्वीकृत</string>
+    <string name="landlord_filter_declined">अस्वीकृत</string>
+    <string name="landlord_empty_requests">आपके खाते के लिए कोई पुष्टि अनुरोध नहीं मिला।</string>
+    <string name="landlord_review_title">फसल साक्ष्य समीक्षा</string>
+    <string name="landlord_farmer_declared_header">किसान द्वारा घोषित खेती का विवरण</string>
+    <string name="landlord_farmer_declared_sub">नीचे दिया गया विवरण बटाईदार किसान द्वारा घोषित किया गया है:</string>
+    <string name="landlord_verified_telemetry_header">स्वतंत्र रूप से सत्यापित जीपीएस साक्ष्य</string>
+    <string name="landlord_verified_telemetry_sub">यह साक्ष्य डिवाइस के जीपीएस हार्डवेयर और डिजिटल हैश द्वारा सत्यापित है:</string>
+    <string name="landlord_action_confirm">खेती की पावती स्वीकार करें</string>
+    <string name="landlord_action_decline">पुष्टि अस्वीकार करें</string>
+    <string name="landlord_decision_prompt">पुष्टि निर्णय चुनें:</string>
+    <string name="landlord_notes_optional">भूस्वामी की टिप्पणी / नोट्स (वैकल्पिक)</string>
+    <string name="landlord_witness_optional">गवाह का नाम (वैकल्पिक)</string>
+    <string name="landlord_btn_submit_decision">निर्णय सबमिट करें</string>
+    <string name="landlord_response_recorded">निर्णय दर्ज किया गया: %s</string>
+    <string name="landlord_response_success">निर्णय सफलतापूर्वक दर्ज हुआ!</string>
+    <string name="landlord_already_responded">इस पुष्टि अनुरोध पर पहले ही निर्णय दिया जा चुका है।</string>
+    <string name="landlord_history_title">पुष्टि इतिहास</string>
+    <string name="landlord_history_empty">इतिहास में कोई पूर्ण पुष्टि नहीं मिली।</string>
+    <string name="landlord_profile_title">भूस्वामी प्रोफ़ाइल</string>
+    <string name="btn_logout">लॉगआउट</string>
+    <string name="logout_confirm_title">लॉगआउट की पुष्टि करें</string>
+    <string name="logout_confirm_message">क्या आप वाकई इस डिवाइस से सुरक्षित रूप से लॉगआउट करना चाहते हैं?</string>
+</resources>

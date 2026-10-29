@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_landlord_dashboard"
+        android:icon="@drawable/ic_home"
+        android:title="@string/landlord_nav_dashboard" />
+    <item
+        android:id="@+id/nav_landlord_requests"
+        android:icon="@drawable/ic_handshake"
+        android:title="@string/landlord_nav_requests" />
+    <item
+        android:id="@+id/nav_landlord_history"
+        android:icon="@drawable/ic_records"
+        android:title="@string/landlord_nav_history" />
+    <item
+        android:id="@+id/nav_landlord_profile"
+        android:icon="@drawable/ic_person"
+        android:title="@string/landlord_nav_profile" />
+</menu>
+

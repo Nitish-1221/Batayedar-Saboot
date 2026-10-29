@@ -1,0 +1,52 @@
+{
+  "name": "batayegedar-backend",
+  "version": "1.0.0",
+  "description": "Secure REST API and cloud backend for Batayedar Saboot farmer crop evidence system",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit"
+  },
+  "keywords": [
+    "batayedar",
+    "saboot",
+    "agriculture",
+    "evidence",
+    "gps",
+    "express",
+    "mongoose"
+  ],
+  "author": "Batayedar Saboot Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.556.0",
+    "@aws-sdk/s3-request-presigner": "^3.556.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "firebase-admin": "^14.5.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^9.2.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testTimeout": 30000
+  }
+}
