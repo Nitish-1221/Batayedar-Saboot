@@ -13,7 +13,7 @@ import org.bataydar.evidence.util.LocaleHelper
 class BataydarApp : Application() {
 
     val database by lazy { AppDatabase.getDatabase(this) }
-    val profileRepository by lazy { FarmerProfileRepository(database.farmerProfileDao()) }
+    val profileRepository by lazy { FarmerProfileRepository(database.farmerProfileDao(), tokenManager) }
     val evidenceRepository by lazy {
         EvidenceRepository(
             context = this,

@@ -94,8 +94,7 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
     suspend fun clearLocalDataIfDifferentAccount(currentFirebaseUid: String) = withContext(Dispatchers.IO) {
         val lastStoredUid = tokenManager.getUserId()
         if (!lastStoredUid.isNullOrBlank() && lastStoredUid != currentFirebaseUid) {
-            Log.d(TAG, "Different account detected. Clearing previous user data for tenant isolation.")
-            db.clearUserData()
+            Log.d(TAG, "Different account detected: previous=$lastStoredUid, current=$currentFirebaseUid. Preserving local data with owner-based isolation.")
         }
     }
 
@@ -177,40 +176,43 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 return@withContext Result.failure(Exception(errorMsg))
             }
 
+            val currentUid = tokenManager.getActiveUid()
             // Clean up any records/evidence that were deleted on cloud or tombstoned locally
             val remoteDeletedEvidenceIds = restoreData.deletedEvidenceIds ?: emptyList()
             val remoteDeletedRecordIds = restoreData.deletedRecordIds ?: emptyList()
-            val localTombstones = tombstoneDao.getAllTombstoneUuids() ?: emptyList()
+            val localTombstones = tombstoneDao.getAllTombstoneUuids(currentUid)
             val allTombstones = (remoteDeletedEvidenceIds + remoteDeletedRecordIds + localTombstones).toSet()
 
             for (delId in remoteDeletedRecordIds) {
-                db.cropRecordDao().deleteRecordById(delId)
+                db.cropRecordDao().deleteRecordById(delId, currentUid)
                 tombstoneDao.insertTombstone(
                     DeletionTombstoneEntity(
                         recordUuid = delId,
                         recordType = "CROP_RECORD",
                         recordId = delId,
-                        firebaseUid = tokenManager.getUserId().orEmpty(),
+                        firebaseUid = currentUid,
+                        ownerFirebaseUid = currentUid,
                         syncStatus = SyncStatus.DELETED
                     )
                 )
             }
 
             for (delId in remoteDeletedEvidenceIds) {
-                val localEv = db.geotaggedEvidenceDao().getEvidenceById(delId)
+                val localEv = db.geotaggedEvidenceDao().getEvidenceById(delId, currentUid) ?: db.geotaggedEvidenceDao().getEvidenceById(delId)
                 if (localEv != null) {
                     try {
                         File(localEv.originalPhotoPath).takeIf { it.exists() }?.delete()
                         localEv.watermarkedPhotoPath?.let { File(it).takeIf { f -> f.exists() }?.delete() }
                     } catch (_: Exception) {}
-                    db.geotaggedEvidenceDao().deleteEvidenceById(delId)
+                    db.geotaggedEvidenceDao().deleteEvidenceById(delId, currentUid)
                 }
                 tombstoneDao.insertTombstone(
                     DeletionTombstoneEntity(
                         recordUuid = delId,
                         recordType = "EVIDENCE",
                         recordId = localEv?.recordId ?: "",
-                        firebaseUid = tokenManager.getUserId().orEmpty(),
+                        firebaseUid = currentUid,
+                        ownerFirebaseUid = currentUid,
                         syncStatus = SyncStatus.DELETED
                     )
                 )
@@ -232,6 +234,7 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
             if (profile != null) {
                 val profileEntity = FarmerProfileEntity(
                     farmerId = profile.userId,
+                    ownerFirebaseUid = currentUid.ifEmpty { profile.userId },
                     fullName = profile.fullName.ifEmpty { tokenManager.getUserName().orEmpty() },
                     phoneNumber = profile.phone.ifEmpty { tokenManager.getUserPhone().orEmpty() },
                     village = profile.village,
@@ -277,7 +280,8 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 cropEntitiesToSave.add(
                     CropRecordEntity(
                         recordId = r.recordId,
-                        farmerId = r.farmerId.ifEmpty { profile?.userId ?: tokenManager.getUserId().orEmpty() },
+                        farmerId = r.farmerId.ifEmpty { profile?.userId ?: currentUid },
+                        ownerFirebaseUid = currentUid,
                         fieldName = field?.fieldName ?: r.fieldName ?: "Cultivation Field",
                         village = field?.village ?: r.village ?: profile?.village ?: "",
                         district = field?.district ?: r.district ?: profile?.district ?: "",
@@ -397,6 +401,7 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 val evidenceEntity = GeotaggedEvidenceEntity(
                     evidenceId = ev.evidenceId,
                     recordId = ev.recordId,
+                    ownerFirebaseUid = currentUid,
                     originalPhotoPath = if (targetPhotoFile.exists()) targetPhotoFile.absolutePath else "",
                     watermarkedPhotoPath = if (targetPhotoFile.exists()) targetPhotoFile.absolutePath else null,
                     photoSha256 = ev.sha256Checksum ?: calculatedSha256,

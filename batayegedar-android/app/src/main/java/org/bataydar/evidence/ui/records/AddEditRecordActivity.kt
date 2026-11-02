@@ -176,8 +176,12 @@ class AddEditRecordActivity : AppCompatActivity() {
 
         if (!isValid) return
 
+        val app = application as org.bataydar.evidence.BataydarApp
+        val currentUid = app.tokenManager.getActiveUid().ifEmpty {
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        }
         val profile = activeProfile
-        val farmerId = profile?.farmerId ?: "LOCAL-FARMER"
+        val farmerId = if (currentUid.isNotEmpty()) currentUid else (profile?.farmerId ?: "LOCAL-FARMER")
         val village = profile?.village ?: "Local Village"
         val district = profile?.district ?: "Local District"
         val state = profile?.state ?: "Local State"

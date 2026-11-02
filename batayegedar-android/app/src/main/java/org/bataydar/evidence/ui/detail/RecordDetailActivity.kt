@@ -7,6 +7,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import android.graphics.Color
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -244,17 +250,48 @@ class RecordDetailActivity : AppCompatActivity() {
         }
     }
 
-        private fun showDeleteConfirmation() {
-        val options = arrayOf(
-            "Delete Everywhere (Cloud & All Devices)",
-            "Delete Locally (This Phone Only)"
-        )
+            private fun createDeleteDialogOptions(): Array<CharSequence> {
+        val deleteEverywhereText = SpannableString("Delete Everywhere (Cloud & All Devices)").apply {
+            setSpan(
+                ForegroundColorSpan(Color.parseColor("#D32F2F")),
+                0,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            setSpan(
+                StyleSpan(Typeface.BOLD),
+                0,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        val deleteLocallyText = SpannableString("Delete Locally (This Phone Only)").apply {
+            setSpan(
+                ForegroundColorSpan(Color.parseColor("#E67E22")),
+                0,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            setSpan(
+                StyleSpan(Typeface.BOLD),
+                0,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        return arrayOf(deleteEverywhereText, deleteLocallyText)
+    }
+
+    private fun showDeleteConfirmation() {
+        val options = createDeleteDialogOptions()
         AlertDialog.Builder(this)
             .setTitle("Delete Cultivation Record")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> {
-                        AlertDialog.Builder(this)
+                        val alert = AlertDialog.Builder(this)
                             .setTitle("Permanent Cloud Deletion")
                             .setMessage("This will permanently delete this cultivation record and all its photos from the cloud and all devices. This action cannot be undone. Are you sure?")
                             .setIcon(android.R.drawable.ic_dialog_alert)
@@ -266,7 +303,12 @@ class RecordDetailActivity : AppCompatActivity() {
                                 }
                             }
                             .setNegativeButton(R.string.action_cancel, null)
-                            .show()
+                            .create()
+
+                        alert.setOnShowListener {
+                            alert.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(Color.parseColor("#D32F2F"))
+                        }
+                        alert.show()
                     }
                     1 -> {
                         lifecycleScope.launch {
@@ -282,16 +324,13 @@ class RecordDetailActivity : AppCompatActivity() {
     }
 
     private fun showDeleteEvidenceConfirmation(evidence: GeotaggedEvidenceEntity) {
-        val options = arrayOf(
-            "Delete Everywhere (Cloud & All Devices)",
-            "Delete Locally (This Phone Only)"
-        )
+        val options = createDeleteDialogOptions()
         AlertDialog.Builder(this)
             .setTitle("Delete Evidence Photo")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> {
-                        AlertDialog.Builder(this)
+                        val alert = AlertDialog.Builder(this)
                             .setTitle("Permanent Cloud Deletion")
                             .setMessage("This will permanently delete this evidence from the cloud and all devices. This action cannot be undone. Are you sure?")
                             .setIcon(android.R.drawable.ic_dialog_alert)
@@ -302,7 +341,12 @@ class RecordDetailActivity : AppCompatActivity() {
                                 }
                             }
                             .setNegativeButton(R.string.action_cancel, null)
-                            .show()
+                            .create()
+
+                        alert.setOnShowListener {
+                            alert.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(Color.parseColor("#D32F2F"))
+                        }
+                        alert.show()
                     }
                     1 -> {
                         lifecycleScope.launch {

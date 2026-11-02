@@ -1,18 +1,34 @@
 package org.bataydar.evidence.data.repository
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import org.bataydar.evidence.data.local.FarmerProfileDao
 import org.bataydar.evidence.data.model.FarmerProfileEntity
+import org.bataydar.evidence.data.remote.auth.TokenManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
-class FarmerProfileRepository(private val profileDao: FarmerProfileDao) {
+class FarmerProfileRepository(
+    private val profileDao: FarmerProfileDao,
+    private val tokenManager: TokenManager? = null
+) {
 
-    val profileFlow: Flow<FarmerProfileEntity?> = profileDao.getProfileFlow()
+    private val activeUidFlow: Flow<String> = tokenManager?.activeUserUidFlow ?: flowOf("")
 
-    suspend fun getProfile(): FarmerProfileEntity? = profileDao.getProfile()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val profileFlow: Flow<FarmerProfileEntity?> = activeUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(null)
+        else profileDao.getProfileFlow(uid)
+    }
+
+    suspend fun getProfile(): FarmerProfileEntity? {
+        val uid = tokenManager?.getActiveUid() ?: ""
+        return if (uid.isNotBlank()) profileDao.getProfile(uid) else profileDao.getProfile()
+    }
 
     suspend fun saveProfile(
         existingId: String?,
@@ -45,9 +61,11 @@ class FarmerProfileRepository(private val profileDao: FarmerProfileDao) {
             return Result.failure(IllegalArgumentException("State cannot be empty"))
         }
 
-        val farmerId = existingId ?: generateFarmerId()
+        val uid = tokenManager?.getActiveUid() ?: ""
+        val farmerId = existingId ?: uid.ifEmpty { generateFarmerId() }
         val profile = FarmerProfileEntity(
             farmerId = farmerId,
+            ownerFirebaseUid = uid.ifEmpty { farmerId },
             fullName = trimmedName,
             phoneNumber = cleanPhone,
             village = trimmedVillage,
@@ -64,6 +82,6 @@ class FarmerProfileRepository(private val profileDao: FarmerProfileDao) {
     fun generateFarmerId(): String {
         val datePart = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
         val randomPart = UUID.randomUUID().toString().take(4).uppercase(Locale.US)
-        return "FMR-$datePart-$randomPart"
+        return "FAR-$datePart-$randomPart"
     }
 }

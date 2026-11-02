@@ -139,4 +139,52 @@ class OfflineRecordAndSyncTest {
         assertTrue(LandlordStatus.CONFIRMED_VERBAL.isConfirmed())
         assertTrue(LandlordStatus.CONFIRMED_WRITTEN.isConfirmed())
     }
+
+    @Test
+    fun testAccountDataIsolation_ownerFirebaseUidOwnership() {
+        val recordA = CropRecordEntity(
+            recordId = "REC-A",
+            farmerId = "uid-account-a",
+            ownerFirebaseUid = "uid-account-a",
+            fieldName = "Account A Plot",
+            village = "Pupri",
+            district = "Sitamarhi",
+            state = "Bihar",
+            cropType = "Wheat",
+            sowingDate = "2026-11-01"
+        )
+        val recordB = CropRecordEntity(
+            recordId = "REC-B",
+            farmerId = "uid-account-b",
+            ownerFirebaseUid = "uid-account-b",
+            fieldName = "Account B Plot",
+            village = "Pupri",
+            district = "Sitamarhi",
+            state = "Bihar",
+            cropType = "Mustard",
+            sowingDate = "2026-11-02"
+        )
+
+        assertNotEquals(recordA.ownerFirebaseUid, recordB.ownerFirebaseUid)
+        assertEquals("uid-account-a", recordA.ownerFirebaseUid)
+        assertEquals("uid-account-b", recordB.ownerFirebaseUid)
+
+        val evA = GeotaggedEvidenceEntity(
+            evidenceId = "EV-A",
+            recordId = "REC-A",
+            ownerFirebaseUid = "uid-account-a",
+            originalPhotoPath = "/tmp/a.jpg",
+            photoSha256 = "abc",
+            latitude = 26.0,
+            longitude = 85.0,
+            accuracyMeters = 5f,
+            gpsFixAgeMs = 1000L,
+            capturedAtUtc = System.currentTimeMillis(),
+            capturedAtLocalFormatted = "2026-11-01 10:00:00",
+            deviceModel = "Test"
+        )
+
+        assertEquals("uid-account-a", evA.ownerFirebaseUid)
+        assertNotEquals(recordB.ownerFirebaseUid, evA.ownerFirebaseUid)
+    }
 }

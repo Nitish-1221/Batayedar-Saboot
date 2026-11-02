@@ -19,7 +19,11 @@ async function createCropRecord(req, res, next) {
       });
     }
 
-    if (field.farmerId !== req.farmerId) {
+    const isFieldOwner = (field.farmerId === req.farmerId) ||
+      (req.firebaseUid && field.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && field.firebaseUid === req.user.firebaseUid);
+
+    if (!isFieldOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You do not own the field specified for this crop record' }
@@ -27,10 +31,12 @@ async function createCropRecord(req, res, next) {
     }
 
     const id = recordId || crypto.randomUUID();
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || req.farmerId;
 
     const cropRecord = new CropRecord({
       recordId: id,
       farmerId: req.farmerId,
+      firebaseUid,
       fieldId,
       cropType,
       cultivationStartDate: new Date(cultivationStartDate),
@@ -68,7 +74,11 @@ async function getCropRecords(req, res, next) {
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
     const skip = (page - 1) * limit;
 
-    const filter = { farmerId: req.farmerId, status: { $ne: 'DELETED' } };
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || req.farmerId;
+    const filter = {
+      $or: [{ farmerId: req.farmerId }, { firebaseUid }],
+      status: { $ne: 'DELETED' }
+    };
     if (req.query.fieldId) {
       filter.fieldId = req.query.fieldId;
     }
@@ -107,7 +117,8 @@ async function getCropRecordById(req, res, next) {
       });
     }
 
-    if (record.farmerId !== req.farmerId) {
+    const isOwner = record.farmerId === req.farmerId || (req.firebaseUid && record.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to access this crop record' }
@@ -135,7 +146,8 @@ async function updateCropRecord(req, res, next) {
       });
     }
 
-    if (record.farmerId !== req.farmerId) {
+    const isOwner = record.farmerId === req.farmerId || (req.firebaseUid && record.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to update this crop record' }
@@ -184,7 +196,8 @@ async function deleteCropRecord(req, res, next) {
       });
     }
 
-    if (record.farmerId !== req.farmerId) {
+    const isOwner = record.farmerId === req.farmerId || (req.firebaseUid && record.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to delete this crop record' }

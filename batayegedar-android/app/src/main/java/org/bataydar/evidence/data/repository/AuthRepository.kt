@@ -229,6 +229,10 @@ class AuthRepository(
      */
     suspend fun logout(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            val previousUid = tokenManager.getActiveUid()
+            if (previousUid.isNotBlank()) {
+                (context?.applicationContext as? org.bataydar.evidence.BataydarApp)?.syncManager?.cancelAccountSync(previousUid)
+            }
             val refreshToken = tokenManager.getRefreshToken()
             if (!refreshToken.isNullOrBlank()) {
                 try {
@@ -239,6 +243,10 @@ class AuthRepository(
             tokenManager.clear()
             Result.success(Unit)
         } catch (e: Exception) {
+            val previousUid = tokenManager.getActiveUid()
+            if (previousUid.isNotBlank()) {
+                (context?.applicationContext as? org.bataydar.evidence.BataydarApp)?.syncManager?.cancelAccountSync(previousUid)
+            }
             firebaseAuth.signOut()
             tokenManager.clear()
             Result.success(Unit)

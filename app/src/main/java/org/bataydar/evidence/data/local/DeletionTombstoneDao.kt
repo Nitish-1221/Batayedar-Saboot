@@ -17,20 +17,20 @@ interface DeletionTombstoneDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTombstones(tombstones: List<DeletionTombstoneEntity>)
 
-    @Query("SELECT * FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING'")
-    suspend fun getPendingDeletions(): List<DeletionTombstoneEntity>
+    @Query("SELECT * FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING' AND (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR firebaseUid = :ownerUid)")
+    suspend fun getPendingDeletions(ownerUid: String = ""): List<DeletionTombstoneEntity>
 
-    @Query("SELECT COUNT(*) FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING'")
-    suspend fun getPendingDeletionsCount(): Int
+    @Query("SELECT COUNT(*) FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING' AND (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR firebaseUid = :ownerUid)")
+    suspend fun getPendingDeletionsCount(ownerUid: String = ""): Int
 
-    @Query("SELECT COUNT(*) FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING'")
-    fun getPendingDeletionsCountFlow(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM deletion_tombstones WHERE syncStatus = 'DELETION_PENDING' AND (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR firebaseUid = :ownerUid)")
+    fun getPendingDeletionsCountFlow(ownerUid: String = ""): Flow<Int>
 
-    @Query("SELECT * FROM deletion_tombstones WHERE recordUuid = :uuid LIMIT 1")
-    suspend fun getTombstone(uuid: String): DeletionTombstoneEntity?
+    @Query("SELECT * FROM deletion_tombstones WHERE recordUuid = :uuid AND (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR firebaseUid = :ownerUid) LIMIT 1")
+    suspend fun getTombstone(uuid: String, ownerUid: String = ""): DeletionTombstoneEntity?
 
-    @Query("SELECT recordUuid FROM deletion_tombstones")
-    suspend fun getAllTombstoneUuids(): List<String>
+    @Query("SELECT recordUuid FROM deletion_tombstones WHERE (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR firebaseUid = :ownerUid)")
+    suspend fun getAllTombstoneUuids(ownerUid: String = ""): List<String>
 
     @Query("UPDATE deletion_tombstones SET syncStatus = :status WHERE recordUuid = :uuid")
     suspend fun updateSyncStatus(uuid: String, status: SyncStatus)
@@ -41,4 +41,3 @@ interface DeletionTombstoneDao {
     @Query("DELETE FROM deletion_tombstones")
     suspend fun deleteAllTombstones()
 }
-

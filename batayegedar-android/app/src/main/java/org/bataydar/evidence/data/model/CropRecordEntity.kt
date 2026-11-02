@@ -1,13 +1,18 @@
 package org.bataydar.evidence.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "crop_records")
+@Entity(
+    tableName = "crop_records",
+    indices = [Index(value = ["ownerFirebaseUid"])]
+)
 data class CropRecordEntity(
     @PrimaryKey
     val recordId: String,
     val farmerId: String,
+    val ownerFirebaseUid: String = "",
     val fieldName: String,
     val village: String,
     val district: String,

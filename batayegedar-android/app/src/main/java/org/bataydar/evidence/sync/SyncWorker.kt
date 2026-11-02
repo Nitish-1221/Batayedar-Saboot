@@ -13,6 +13,20 @@ class SyncWorker(
     private val cloudSyncEngine = (appContext.applicationContext as BataydarApp).cloudSyncEngine
 
     override suspend fun doWork(): Result {
+        val app = applicationContext as BataydarApp
+        val currentUid = app.tokenManager.getActiveUid()
+        val targetUid = inputData.getString(SyncManager.KEY_OWNER_FIREBASE_UID)
+
+        // Account isolation guard: if work was queued for a different account, abort
+        if (!targetUid.isNullOrBlank() && targetUid != currentUid) {
+            return Result.success()
+        }
+
+        // If no user is logged in, do not perform sync
+        if (currentUid.isBlank()) {
+            return Result.success()
+        }
+
         return try {
             val result = cloudSyncEngine.performFullSync()
             when (result) {

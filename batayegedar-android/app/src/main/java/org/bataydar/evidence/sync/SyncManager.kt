@@ -2,6 +2,7 @@ package org.bataydar.evidence.sync
 
 import android.content.Context
 import androidx.work.*
+import org.bataydar.evidence.data.remote.auth.TokenManager
 import java.util.concurrent.TimeUnit
 
 class SyncManager(private val context: Context) {
@@ -12,12 +13,14 @@ class SyncManager(private val context: Context) {
      * Enqueue an immediate one-time synchronization task when user taps Sync Now or adds new evidence
      */
     fun enqueueImmediateSync() {
+        val currentUid = TokenManager.getInstance(context).getActiveUid()
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(constraints)
+            .setInputData(workDataOf(KEY_OWNER_FIREBASE_UID to currentUid))
             .setBackoffCriteria(
                 BackoffPolicy.EXPONENTIAL,
                 WorkRequest.MIN_BACKOFF_MILLIS,
@@ -27,10 +30,22 @@ class SyncManager(private val context: Context) {
             .build()
 
         workManager.enqueueUniqueWork(
-            UNIQUE_WORK_NAME_IMMEDIATE,
+            "${UNIQUE_WORK_NAME_IMMEDIATE}_$currentUid",
             ExistingWorkPolicy.REPLACE,
             syncRequest
         )
+    }
+
+    /**
+     * Cancel any pending synchronization jobs for a specific user upon logout
+     */
+    fun cancelAccountSync(ownerUid: String? = null) {
+        val uid = ownerUid ?: TokenManager.getInstance(context).getActiveUid()
+        if (uid.isNotBlank()) {
+            workManager.cancelUniqueWork("${UNIQUE_WORK_NAME_IMMEDIATE}_$uid")
+        }
+        workManager.cancelUniqueWork(UNIQUE_WORK_NAME_IMMEDIATE)
+        workManager.cancelAllWorkByTag(TAG_ONE_TIME_SYNC)
     }
 
     /**
@@ -84,6 +99,7 @@ class SyncManager(private val context: Context) {
 
     companion object {
         const val TAG_ONE_TIME_SYNC = "tag_batayedar_sync"
+        const val KEY_OWNER_FIREBASE_UID = "key_owner_firebase_uid"
         private const val UNIQUE_WORK_NAME_IMMEDIATE = "work_batayedar_immediate_sync"
         private const val UNIQUE_WORK_NAME_PERIODIC = "work_batayedar_periodic_sync"
         private const val UNIQUE_WORK_NAME_KEEP_ALIVE = "work_batayedar_keep_alive"

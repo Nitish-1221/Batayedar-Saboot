@@ -73,14 +73,15 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun refreshDatabaseCounts() = withContext(Dispatchers.IO) {
-        val totalRec = db.cropRecordDao().getTotalRecordsCountDirect()
-        val syncedRec = db.cropRecordDao().getSyncedRecordsCountDirect()
-        val totalEv = db.geotaggedEvidenceDao().getTotalEvidenceCountDirect()
-        val syncedEv = db.geotaggedEvidenceDao().getSyncedEvidenceCountDirect()
-        val failedEv = db.geotaggedEvidenceDao().getFailedEvidenceCountDirect()
+        val uid = (requireContext().applicationContext as BataydarApp).tokenManager.getActiveUid()
+        val totalRec = db.cropRecordDao().getTotalRecordsCountDirect(uid)
+        val syncedRec = db.cropRecordDao().getSyncedRecordsCountDirect(uid)
+        val totalEv = db.geotaggedEvidenceDao().getTotalEvidenceCountDirect(uid)
+        val syncedEv = db.geotaggedEvidenceDao().getSyncedEvidenceCountDirect(uid)
+        val failedEv = db.geotaggedEvidenceDao().getFailedEvidenceCountDirect(uid)
 
-        withContext(Dispatchers.Main) {
-            if (_binding == null) return@withContext
+        withContext(Dispatchers.Main) mainBlock@{
+            if (_binding == null) return@mainBlock
             if (!cloudSyncEngine.uploadProgressFlow.value.isUploading) {
                 binding.tvUploadProgressCounts.text = String.format(
                     Locale.getDefault(),

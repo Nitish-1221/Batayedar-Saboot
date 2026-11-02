@@ -8,9 +8,11 @@ async function createField(req, res, next) {
 
     const id = fieldId || crypto.randomUUID();
 
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || req.farmerId;
     const field = new Field({
       fieldId: id,
       farmerId: req.farmerId,
+      firebaseUid,
       fieldName,
       description: description || '',
       village,
@@ -47,7 +49,11 @@ async function getFields(req, res, next) {
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
     const skip = (page - 1) * limit;
 
-    const filter = { farmerId: req.farmerId, isDeleted: false };
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || req.farmerId;
+    const filter = {
+      $or: [{ farmerId: req.farmerId }, { firebaseUid }],
+      isDeleted: false
+    };
 
     const [fields, total] = await Promise.all([
       Field.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
@@ -84,7 +90,8 @@ async function getFieldById(req, res, next) {
     }
 
     // Strict multi-tenant authorization
-    if (field.farmerId !== req.farmerId) {
+    const isOwner = field.farmerId === req.farmerId || (req.firebaseUid && field.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to access this field' }
@@ -112,7 +119,8 @@ async function updateField(req, res, next) {
       });
     }
 
-    if (field.farmerId !== req.farmerId) {
+    const isOwner = field.farmerId === req.farmerId || (req.firebaseUid && field.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to update this field' }
@@ -161,7 +169,8 @@ async function deleteField(req, res, next) {
       });
     }
 
-    if (field.farmerId !== req.farmerId) {
+    const isOwner = field.farmerId === req.farmerId || (req.firebaseUid && field.firebaseUid === req.firebaseUid);
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to delete this field' }

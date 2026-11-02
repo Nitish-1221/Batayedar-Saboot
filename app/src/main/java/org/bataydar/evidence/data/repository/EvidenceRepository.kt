@@ -4,7 +4,10 @@ import android.content.Context
 import android.location.Location
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import org.bataydar.evidence.data.local.AuditLogDao
 import org.bataydar.evidence.data.local.CropRecordDao
@@ -38,26 +41,67 @@ class EvidenceRepository(
 
     private val tokenManager by lazy { TokenManager.getInstance(context) }
 
-    val allRecordsFlow: Flow<List<RecordWithEvidence>> = cropRecordDao.getAllRecordsWithEvidenceFlow()
-    val totalFieldsCount: Flow<Int> = cropRecordDao.getTotalFieldsCount()
-    val totalEvidenceCount: Flow<Int> = evidenceDao.getTotalEvidenceCount()
-    val awaitingLandlordCount: Flow<Int> = cropRecordDao.getAwaitingLandlordCount()
-    val pendingSyncCount: Flow<Int> = cropRecordDao.getPendingSyncCount()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val allRecordsFlow: Flow<List<RecordWithEvidence>> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(emptyList())
+        else cropRecordDao.getAllRecordsWithEvidenceFlow(uid)
+    }
 
-    fun getRecentRecords(limit: Int = 5): Flow<List<RecordWithEvidence>> {
-        return cropRecordDao.getRecentRecords(limit)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val totalFieldsCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(0)
+        else cropRecordDao.getTotalFieldsCount(uid)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val totalEvidenceCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(0)
+        else evidenceDao.getTotalEvidenceCount(uid)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val awaitingLandlordCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(0)
+        else cropRecordDao.getAwaitingLandlordCount(uid)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pendingSyncCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(0)
+        else cropRecordDao.getPendingSyncCount(uid)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getRecentRecords(limit: Int = 5): Flow<List<RecordWithEvidence>> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
+        if (uid.isBlank()) flowOf(emptyList())
+        else cropRecordDao.getRecentRecords(limit, uid)
     }
 
     suspend fun getRecordWithEvidence(recordId: String): RecordWithEvidence? {
-        return cropRecordDao.getRecordWithEvidence(recordId)
+        val uid = tokenManager.getActiveUid()
+        return if (uid.isNotBlank()) {
+            cropRecordDao.getRecordWithEvidence(recordId, uid)
+        } else {
+            cropRecordDao.getRecordWithEvidence(recordId)
+        }
     }
 
     fun getRecordWithEvidenceFlow(recordId: String): Flow<RecordWithEvidence?> {
-        return cropRecordDao.getRecordWithEvidenceFlow(recordId)
+        val uid = tokenManager.getActiveUid()
+        return if (uid.isNotBlank()) {
+            cropRecordDao.getRecordWithEvidenceFlow(recordId, uid)
+        } else {
+            cropRecordDao.getRecordWithEvidenceFlow(recordId)
+        }
     }
 
     fun getEvidenceForRecordFlow(recordId: String): Flow<List<GeotaggedEvidenceEntity>> {
-        return evidenceDao.getEvidenceForRecordFlow(recordId)
+        val uid = tokenManager.getActiveUid()
+        return if (uid.isNotBlank()) {
+            evidenceDao.getEvidenceForRecordFlow(recordId, uid)
+        } else {
+            evidenceDao.getEvidenceForRecordFlow(recordId)
+        }
     }
 
     fun getAuditLogsForRecordFlow(recordId: String): Flow<List<AuditLogEntity>> {
@@ -90,10 +134,15 @@ class EvidenceRepository(
             return@withContext Result.failure(IllegalArgumentException("Sowing date is required"))
         }
 
+        val currentUid = tokenManager.getActiveUid().ifEmpty {
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: farmerId
+        }
+
         val recordId = generateRecordId()
         val entity = CropRecordEntity(
             recordId = recordId,
             farmerId = farmerId,
+            ownerFirebaseUid = currentUid,
             fieldName = trimmedField,
             village = village.trim(),
             district = district.trim(),
@@ -114,6 +163,7 @@ class EvidenceRepository(
         auditLogDao.insertLog(
             AuditLogEntity(
                 recordId = recordId,
+                ownerFirebaseUid = currentUid,
                 action = "RECORD_CREATED",
                 timestamp = System.currentTimeMillis(),
                 details = "Created record for $trimmedCrop at $trimmedField by farmer $farmerId"
@@ -124,10 +174,12 @@ class EvidenceRepository(
     }
 
     suspend fun updateCropRecord(record: CropRecordEntity) = withContext(Dispatchers.IO) {
+        val currentUid = record.ownerFirebaseUid.ifEmpty { tokenManager.getActiveUid() }
         cropRecordDao.updateRecord(record)
         auditLogDao.insertLog(
             AuditLogEntity(
                 recordId = record.recordId,
+                ownerFirebaseUid = currentUid,
                 action = "RECORD_UPDATED",
                 timestamp = System.currentTimeMillis(),
                 details = "Updated record details for ${record.fieldName}"
@@ -208,9 +260,16 @@ class EvidenceRepository(
         val evidenceId = generateEvidenceId()
         val deviceModel = "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})"
 
+        val currentUid = record.ownerFirebaseUid.ifEmpty {
+            tokenManager.getActiveUid().ifEmpty {
+                com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            }
+        }
+
         val evidenceEntity = GeotaggedEvidenceEntity(
             evidenceId = evidenceId,
             recordId = recordId,
+            ownerFirebaseUid = currentUid,
             originalPhotoPath = photoFile.absolutePath,
             watermarkedPhotoPath = if (watermarkedCreated) derivativeFile.absolutePath else null,
             photoSha256 = sha256,
@@ -236,6 +295,7 @@ class EvidenceRepository(
         auditLogDao.insertLog(
             AuditLogEntity(
                 recordId = recordId,
+                ownerFirebaseUid = currentUid,
                 action = "EVIDENCE_CAPTURED",
                 timestamp = nowUtc,
                 details = String.format(
@@ -267,6 +327,7 @@ class EvidenceRepository(
         auditLogDao.insertLog(
             AuditLogEntity(
                 recordId = recordId,
+                ownerFirebaseUid = tokenManager.getActiveUid(),
                 action = "LANDLORD_CONFIRMATION_UPDATED",
                 timestamp = now,
                 details = "Landlord status updated to ${status.name}. Notes: ${notes ?: "None"}"
@@ -280,7 +341,7 @@ class EvidenceRepository(
      * Does not delete cloud evidence or create a cloud deletion tombstone.
      */
     suspend fun deleteEvidenceLocally(evidenceId: String) = withContext(Dispatchers.IO) {
-        val evidence = evidenceDao.getEvidenceById(evidenceId)
+        val evidence = evidenceDao.getEvidenceById(evidenceId, tokenManager.getActiveUid()) ?: evidenceDao.getEvidenceById(evidenceId)
         if (evidence != null) {
             try {
                 File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
@@ -299,8 +360,8 @@ class EvidenceRepository(
      * (marked DELETION_PENDING) so the deletion synchronizes to the cloud upon next Upload Data / Sync.
      */
     suspend fun deleteEvidenceEverywhere(evidenceId: String) = withContext(Dispatchers.IO) {
-        val evidence = evidenceDao.getEvidenceById(evidenceId)
-        val uid = tokenManager.getUserId().orEmpty()
+        val evidence = evidenceDao.getEvidenceById(evidenceId, tokenManager.getActiveUid()) ?: evidenceDao.getEvidenceById(evidenceId)
+        val uid = evidence?.ownerFirebaseUid?.ifEmpty { tokenManager.getActiveUid() } ?: tokenManager.getActiveUid()
         if (evidence != null) {
             try {
                 File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
@@ -315,6 +376,7 @@ class EvidenceRepository(
                 recordType = "EVIDENCE",
                 recordId = evidence.recordId,
                 firebaseUid = uid,
+                ownerFirebaseUid = uid,
                 deletedAt = System.currentTimeMillis(),
                 syncStatus = SyncStatus.DELETION_PENDING
             )
@@ -330,6 +392,7 @@ class EvidenceRepository(
                 recordType = "EVIDENCE",
                 recordId = "",
                 firebaseUid = uid,
+                ownerFirebaseUid = uid,
                 deletedAt = System.currentTimeMillis(),
                 syncStatus = SyncStatus.DELETION_PENDING
             )
@@ -341,7 +404,7 @@ class EvidenceRepository(
      * Delete entire crop record and associated evidence LOCALLY only.
      */
     suspend fun deleteRecordLocally(recordId: String) = withContext(Dispatchers.IO) {
-        val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId)
+        val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId, tokenManager.getActiveUid()) ?: cropRecordDao.getRecordWithEvidence(recordId)
         if (recordWithEvidence != null) {
             recordWithEvidence.evidenceList.forEach { evidence ->
                 try {
@@ -363,8 +426,8 @@ class EvidenceRepository(
      * Queues deletion tombstones for the crop record and all associated photos.
      */
     suspend fun deleteRecordEverywhere(recordId: String) = withContext(Dispatchers.IO) {
-        val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId)
-        val uid = tokenManager.getUserId().orEmpty()
+        val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId, tokenManager.getActiveUid()) ?: cropRecordDao.getRecordWithEvidence(recordId)
+        val uid = recordWithEvidence?.record?.ownerFirebaseUid?.ifEmpty { tokenManager.getActiveUid() } ?: tokenManager.getActiveUid()
         if (recordWithEvidence != null) {
             recordWithEvidence.evidenceList.forEach { evidence ->
                 try {
@@ -381,6 +444,7 @@ class EvidenceRepository(
                     recordType = "EVIDENCE",
                     recordId = recordId,
                     firebaseUid = uid,
+                    ownerFirebaseUid = uid,
                     deletedAt = System.currentTimeMillis(),
                     syncStatus = SyncStatus.DELETION_PENDING
                 )
@@ -392,6 +456,7 @@ class EvidenceRepository(
                 recordType = "CROP_RECORD",
                 recordId = recordId,
                 firebaseUid = uid,
+                ownerFirebaseUid = uid,
                 deletedAt = System.currentTimeMillis(),
                 syncStatus = SyncStatus.DELETION_PENDING
             )
@@ -405,6 +470,7 @@ class EvidenceRepository(
                 recordType = "CROP_RECORD",
                 recordId = recordId,
                 firebaseUid = uid,
+                ownerFirebaseUid = uid,
                 deletedAt = System.currentTimeMillis(),
                 syncStatus = SyncStatus.DELETION_PENDING
             )
@@ -417,9 +483,11 @@ class EvidenceRepository(
     suspend fun deleteEvidence(evidenceId: String) = deleteEvidenceEverywhere(evidenceId)
 
     suspend fun logAuditAction(recordId: String, action: String, details: String) = withContext(Dispatchers.IO) {
+        val uid = tokenManager.getActiveUid()
         auditLogDao.insertLog(
             AuditLogEntity(
                 recordId = recordId,
+                ownerFirebaseUid = uid,
                 action = action,
                 timestamp = System.currentTimeMillis(),
                 details = details

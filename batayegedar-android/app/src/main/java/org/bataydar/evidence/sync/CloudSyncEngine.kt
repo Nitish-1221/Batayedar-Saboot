@@ -124,9 +124,10 @@ class CloudSyncEngine(
         val lastStatus = tokenManager.getLastSyncStatus()
         val lastMsg = tokenManager.getLastSyncMessage()
 
-        val pendingRecords = cropRecordDao.getPendingSyncCountDirect()
-        val pendingEvidence = evidenceDao.getUnsyncedEvidenceCountDirect()
-        val pendingDeletions = deletionTombstoneDao.getPendingDeletionsCount()
+        val currentUid = tokenManager.getActiveUid()
+        val pendingRecords = cropRecordDao.getPendingSyncCountDirect(currentUid)
+        val pendingEvidence = evidenceDao.getUnsyncedEvidenceCountDirect(currentUid)
+        val pendingDeletions = deletionTombstoneDao.getPendingDeletionsCount(currentUid)
         val totalPending = pendingRecords + pendingEvidence + pendingDeletions
 
         val state = when {
@@ -358,9 +359,10 @@ class CloudSyncEngine(
             return@withContext UploadResult(false, 0, 0, 0, msg)
         }
 
-        val pendingDeletions = deletionTombstoneDao.getPendingDeletions()
-        val pendingRecords = cropRecordDao.getPendingRecords()
-        val pendingEvidenceList = evidenceDao.getPendingEvidence()
+        val currentUid = tokenManager.getActiveUid()
+        val pendingDeletions = deletionTombstoneDao.getPendingDeletions(currentUid)
+        val pendingRecords = cropRecordDao.getPendingRecords(currentUid)
+        val pendingEvidenceList = evidenceDao.getPendingEvidence(currentUid)
 
         val totalRecords = pendingRecords.size
         val totalPhotos = pendingEvidenceList.size
@@ -399,14 +401,58 @@ class CloudSyncEngine(
                 val delEvidenceIds = pendingDeletions.filter { it.recordType == "EVIDENCE" }.map { it.recordUuid }
                 val delRecordIds = pendingDeletions.filter { it.recordType == "CROP_RECORD" }.map { it.recordUuid }
 
-                val delRequest = SyncDeletionsRequest(
-                    deletedEvidenceIds = delEvidenceIds,
-                    deletedRecordIds = delRecordIds
-                )
+                var deletionsSynced = false
+                try {
+                    val delRequest = SyncDeletionsRequest(
+                        deletedEvidenceIds = delEvidenceIds,
+                        deletedRecordIds = delRecordIds
+                    )
 
-                val delResponse = apiClient.syncApi.syncDeletions(delRequest)
-                if (!delResponse.isSuccessful || delResponse.body()?.success != true) {
-                    val errMsg = "Failed syncing deletions: (code ${delResponse.code()})"
+                    val delResponse = apiClient.syncApi.syncDeletions(delRequest)
+                    if (delResponse.isSuccessful && delResponse.body()?.success == true) {
+                        for (tombstone in pendingDeletions) {
+                            deletionTombstoneDao.updateSyncStatus(tombstone.recordUuid, SyncStatus.DELETED)
+                        }
+                        deletionsSynced = true
+                    } else {
+                        Log.w(TAG, "Batch deletions returned code ${delResponse.code()}, attempting fallback.")
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Batch deletions failed: ${e.message}, attempting fallback.")
+                }
+
+                if (!deletionsSynced) {
+                    // Fallback to individual deletion endpoints
+                    var anySuccess = false
+                    for (evId in delEvidenceIds) {
+                        try {
+                            val res = apiClient.evidenceApi.deleteEvidence(evId)
+                            if (res.isSuccessful || res.code() == 404) {
+                                deletionTombstoneDao.updateSyncStatus(evId, SyncStatus.DELETED)
+                                anySuccess = true
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Fallback deletion for evidence $evId: ${e.message}")
+                        }
+                    }
+                    for (recId in delRecordIds) {
+                        try {
+                            val res = apiClient.cropRecordApi.deleteCropRecord(recId)
+                            if (res.isSuccessful || res.code() == 404) {
+                                deletionTombstoneDao.updateSyncStatus(recId, SyncStatus.DELETED)
+                                anySuccess = true
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Fallback deletion for record $recId: ${e.message}")
+                        }
+                    }
+                    if (anySuccess || (delEvidenceIds.isEmpty() && delRecordIds.isEmpty())) {
+                        deletionsSynced = true
+                    }
+                }
+
+                if (!deletionsSynced) {
+                    val errMsg = "Failed syncing deletions with cloud."
                     Log.e(TAG, errMsg)
                     _uploadProgressFlow.value = _uploadProgressFlow.value.copy(
                         isUploading = false,
@@ -416,17 +462,19 @@ class CloudSyncEngine(
                     return@withContext UploadResult(false, 0, 0, 0, errMsg)
                 }
 
-                // Mark confirmed deletions as DELETED
-                for (tombstone in pendingDeletions) {
-                    deletionTombstoneDao.updateSyncStatus(tombstone.recordUuid, SyncStatus.DELETED)
-                }
                 Log.d(TAG, "Synchronized ${pendingDeletions.size} deletion tombstones with cloud.")
             }
 
             // Exclude any tombstoned entities from upload to prevent resurrecting deleted records
-            val tombstoneUuids = deletionTombstoneDao.getAllTombstoneUuids().toSet()
-            val activePendingRecords = pendingRecords.filter { it.recordId !in tombstoneUuids }
-            val activePendingEvidenceList = pendingEvidenceList.filter { it.evidenceId !in tombstoneUuids && it.recordId !in tombstoneUuids }
+            val tombstoneUuids = deletionTombstoneDao.getAllTombstoneUuids(currentUid).toSet()
+            val activePendingRecords = pendingRecords.filter {
+                (it.ownerFirebaseUid.isBlank() || it.ownerFirebaseUid == currentUid) && it.recordId !in tombstoneUuids
+            }
+            val activePendingEvidenceList = pendingEvidenceList.filter {
+                (it.ownerFirebaseUid.isBlank() || it.ownerFirebaseUid == currentUid) &&
+                it.evidenceId !in tombstoneUuids &&
+                it.recordId !in tombstoneUuids
+            }
 
             // 1. Push Crop Records and Field Metadata
             if (activePendingRecords.isNotEmpty()) {
@@ -508,7 +556,7 @@ class CloudSyncEngine(
             // 3. Mark Crop Records as fully SYNCED only when all required evidence photos are synced!
             val now = System.currentTimeMillis()
             for (record in activePendingRecords) {
-                val unsyncedPhotos = evidenceDao.getUnsyncedEvidenceCountForRecord(record.recordId)
+                val unsyncedPhotos = evidenceDao.getUnsyncedEvidenceCountForRecord(record.recordId, currentUid)
                 if (unsyncedPhotos == 0) {
                     cropRecordDao.updateSyncStatus(record.recordId, SyncStatus.SYNCED, now)
                     recordsUploaded++

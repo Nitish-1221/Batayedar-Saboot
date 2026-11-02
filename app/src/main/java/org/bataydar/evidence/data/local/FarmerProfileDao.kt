@@ -10,11 +10,11 @@ import org.bataydar.evidence.data.model.FarmerProfileEntity
 
 @Dao
 interface FarmerProfileDao {
-    @Query("SELECT * FROM farmer_profiles LIMIT 1")
-    fun getProfileFlow(): Flow<FarmerProfileEntity?>
+    @Query("SELECT * FROM farmer_profiles WHERE (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR farmerId = :ownerUid) LIMIT 1")
+    fun getProfileFlow(ownerUid: String = ""): Flow<FarmerProfileEntity?>
 
-    @Query("SELECT * FROM farmer_profiles LIMIT 1")
-    suspend fun getProfile(): FarmerProfileEntity?
+    @Query("SELECT * FROM farmer_profiles WHERE (:ownerUid = '' OR ownerFirebaseUid = :ownerUid OR farmerId = :ownerUid) LIMIT 1")
+    suspend fun getProfile(ownerUid: String = ""): FarmerProfileEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(profile: FarmerProfileEntity)

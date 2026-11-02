@@ -15,12 +15,16 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["recordId"])]
+    indices = [
+        Index(value = ["recordId"]),
+        Index(value = ["ownerFirebaseUid"])
+    ]
 )
 data class GeotaggedEvidenceEntity(
     @PrimaryKey
     val evidenceId: String,
     val recordId: String,
+    val ownerFirebaseUid: String = "",
     val originalPhotoPath: String,
     val watermarkedPhotoPath: String? = null,
     val photoSha256: String,

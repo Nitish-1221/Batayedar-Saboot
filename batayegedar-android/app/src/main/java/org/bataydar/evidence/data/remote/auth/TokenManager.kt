@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class TokenManager(context: Context) {
 
@@ -24,14 +27,20 @@ class TokenManager(context: Context) {
         context.getSharedPreferences("batayedar_tokens_fallback", Context.MODE_PRIVATE)
     }
 
+    private val _activeUserUidFlow = MutableStateFlow(prefs.getString(KEY_USER_ID, null) ?: "")
+    val activeUserUidFlow: StateFlow<String> = _activeUserUidFlow.asStateFlow()
+
+    fun getActiveUid(): String = getUserId() ?: ""
+
     fun saveTokens(accessToken: String, refreshToken: String, userId: String? = null) {
-        prefs.edit()
+        val editor = prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
             .putString(KEY_REFRESH_TOKEN, refreshToken)
-            .apply {
-                if (userId != null) putString(KEY_USER_ID, userId)
-            }
-            .apply()
+        if (userId != null) {
+            editor.putString(KEY_USER_ID, userId)
+            _activeUserUidFlow.value = userId
+        }
+        editor.apply()
     }
 
     fun saveSession(
@@ -54,6 +63,7 @@ class TokenManager(context: Context) {
         if (email != null) editor.putString(KEY_USER_EMAIL, email)
 
         editor.apply()
+        _activeUserUidFlow.value = userId
     }
 
     fun getAccessToken(): String? = prefs.getString(KEY_ACCESS_TOKEN, null)
@@ -120,6 +130,7 @@ class TokenManager(context: Context) {
 
     fun clear() {
         prefs.edit().clear().apply()
+        _activeUserUidFlow.value = ""
     }
 
     companion object {
