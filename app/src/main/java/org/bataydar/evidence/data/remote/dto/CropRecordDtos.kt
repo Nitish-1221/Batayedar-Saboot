@@ -21,7 +21,15 @@ data class CropRecordDto(
     @SerializedName("notes") val notes: String = "",
     @SerializedName("landlordName") val landlordName: String = "",
     @SerializedName("landlordPhone") val landlordPhone: String = "",
-    @SerializedName("status") val status: String = "ACTIVE"
+    @SerializedName("status") val status: String = "ACTIVE",
+    @SerializedName("fieldName") val fieldName: String? = null,
+    @SerializedName("village") val village: String? = null,
+    @SerializedName("district") val district: String? = null,
+    @SerializedName("state") val state: String? = null,
+    @SerializedName("createdAt") val createdAt: String? = null,
+    @SerializedName("updatedAt") val updatedAt: String? = null,
+    @SerializedName("landlordConfirmationStatus") val landlordConfirmationStatus: String? = null,
+    @SerializedName("landlordConfirmationNotes") val landlordConfirmationNotes: String? = null
 )
 
 data class CropRecordData(

@@ -36,6 +36,14 @@ const config = {
     serviceAccountKey: process.env.FIREBASE_SERVICE_ACCOUNT_KEY || null
   },
 
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    url: process.env.CLOUDINARY_URL || '',
+    folder: process.env.CLOUDINARY_FOLDER || 'batayedar_evidence'
+  },
+
   storage: {
     provider: process.env.STORAGE_PROVIDER || 'local', // 's3' or 'local'
     awsRegion: process.env.AWS_REGION || 'ap-south-1',

@@ -110,4 +110,3 @@ class LandlordProfileFragment : Fragment() {
         _binding = null
     }
 }
-

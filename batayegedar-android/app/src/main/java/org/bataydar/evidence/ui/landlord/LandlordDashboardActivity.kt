@@ -81,4 +81,3 @@ class LandlordDashboardActivity : AppCompatActivity() {
             .commit()
     }
 }
-

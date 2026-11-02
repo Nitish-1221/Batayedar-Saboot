@@ -104,4 +104,3 @@ class LandlordRequestsFragment : Fragment() {
         _binding = null
     }
 }
-

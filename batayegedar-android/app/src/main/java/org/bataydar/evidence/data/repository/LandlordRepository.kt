@@ -137,4 +137,3 @@ class LandlordRepository(
         return "$fallback (${response.code()})"
     }
 }
-

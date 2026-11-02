@@ -25,11 +25,35 @@ interface GeotaggedEvidenceDao {
     @Query("SELECT * FROM geotagged_evidence WHERE evidenceId = :evidenceId LIMIT 1")
     suspend fun getEvidenceById(evidenceId: String): GeotaggedEvidenceEntity?
 
-    @Query("SELECT * FROM geotagged_evidence WHERE syncStatus = 'PENDING_SYNC' OR syncStatus = 'SYNC_FAILED'")
+    @Query("SELECT * FROM geotagged_evidence WHERE syncStatus != 'SYNCED'")
     suspend fun getPendingEvidence(): List<GeotaggedEvidenceEntity>
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence WHERE syncStatus != 'SYNCED'")
+    fun getUnsyncedEvidenceCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence WHERE syncStatus != 'SYNCED'")
+    suspend fun getUnsyncedEvidenceCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence")
+    suspend fun getTotalEvidenceCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence WHERE syncStatus = 'SYNCED'")
+    suspend fun getSyncedEvidenceCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence WHERE syncStatus = 'SYNC_FAILED'")
+    suspend fun getFailedEvidenceCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM geotagged_evidence WHERE recordId = :recordId AND syncStatus != 'SYNCED'")
+    suspend fun getUnsyncedEvidenceCountForRecord(recordId: String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvidence(evidence: GeotaggedEvidenceEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEvidences(evidences: List<GeotaggedEvidenceEntity>)
+
+    @Query("DELETE FROM geotagged_evidence")
+    suspend fun deleteAllEvidence()
 
     @Update
     suspend fun updateEvidence(evidence: GeotaggedEvidenceEntity)

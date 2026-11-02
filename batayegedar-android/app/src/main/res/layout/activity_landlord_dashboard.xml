@@ -92,4 +92,3 @@
         app:menu="@menu/landlord_bottom_nav_menu" />
 
 </LinearLayout>
-

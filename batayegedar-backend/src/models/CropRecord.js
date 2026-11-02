@@ -11,6 +11,11 @@ const cropRecordSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    firebaseUid: {
+      type: String,
+      sparse: true,
+      index: true
+    },
     fieldId: {
       type: String,
       required: true
@@ -52,6 +57,15 @@ const cropRecordSchema = new mongoose.Schema(
       enum: ['ACTIVE', 'ARCHIVED', 'DELETED'],
       default: 'ACTIVE',
       index: true
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+    hasEvidence: {
+      type: Boolean,
+      default: false
     },
     syncVersion: {
       type: Number,

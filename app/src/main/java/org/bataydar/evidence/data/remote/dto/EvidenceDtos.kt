@@ -36,12 +36,19 @@ data class EvidenceDto(
     @SerializedName("evidenceId") val evidenceId: String,
     @SerializedName("recordId") val recordId: String,
     @SerializedName("farmerId") val farmerId: String,
-    @SerializedName("sha256Checksum") val sha256Checksum: String,
+    @SerializedName("sha256Checksum") val sha256Checksum: String? = null,
     @SerializedName("latitude") val latitude: Double,
     @SerializedName("longitude") val longitude: Double,
+    @SerializedName("altitude") val altitude: Double? = 0.0,
     @SerializedName("reportedGpsAccuracyMeters") val reportedGpsAccuracyMeters: Float,
-    @SerializedName("validationStatus") val validationStatus: String,
-    @SerializedName("gpsAccuracyAcceptable") val gpsAccuracyAcceptable: Boolean
+    @SerializedName("clientFixAgeSeconds") val clientFixAgeSeconds: Long? = 0,
+    @SerializedName("clientCapturedAtUtc") val clientCapturedAtUtc: String? = null,
+    @SerializedName("deviceModel") val deviceModel: String? = null,
+    @SerializedName("validationStatus") val validationStatus: String = "VERIFIED",
+    @SerializedName("gpsAccuracyAcceptable") val gpsAccuracyAcceptable: Boolean = true,
+    @SerializedName("downloadUrl") val downloadUrl: String? = null,
+    @SerializedName("cloudinaryUrl") val cloudinaryUrl: String? = null,
+    @SerializedName("notes") val notes: String? = null
 )
 
 data class EvidenceData(
@@ -50,4 +57,9 @@ data class EvidenceData(
 
 data class EvidenceListData(
     @SerializedName("evidence") val evidence: List<EvidenceDto>
+)
+
+data class DownloadUrlData(
+    @SerializedName("downloadUrl") val downloadUrl: String,
+    @SerializedName("expiresInSeconds") val expiresInSeconds: Long = 0L
 )

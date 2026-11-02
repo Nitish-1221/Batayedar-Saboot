@@ -15,6 +15,11 @@ const landlordConfirmationSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    firebaseUid: {
+      type: String,
+      sparse: true,
+      index: true
+    },
     landlordName: {
       type: String,
       required: true,

@@ -12,7 +12,8 @@ const syncPushSchema = {
         district: z.string().min(1),
         state: z.string().min(1),
         areaAcres: z.number().optional().default(0),
-        surveyKhasraNumber: z.string().optional().default('')
+        surveyKhasraNumber: z.string().optional().default(''),
+        updatedAt: z.string().optional()
       })
     ).optional().default([]),
 
@@ -24,7 +25,8 @@ const syncPushSchema = {
         cultivationStartDate: z.string(),
         notes: z.string().optional().default(''),
         landlordName: z.string().optional().default(''),
-        landlordPhone: z.string().optional().default('')
+        landlordPhone: z.string().optional().default(''),
+        updatedAt: z.string().optional()
       })
     ).optional().default([]),
 
@@ -37,7 +39,8 @@ const syncPushSchema = {
         reportedGpsAccuracyMeters: z.number().min(0),
         clientCapturedAtUtc: z.string(),
         clientReportedChecksum: z.string().optional().default(''),
-        notes: z.string().optional().default('')
+        notes: z.string().optional().default(''),
+        updatedAt: z.string().optional()
       })
     ).optional().default([])
   })
@@ -49,7 +52,16 @@ const syncPullSchema = {
   })
 };
 
+const syncRestoreSchema = {
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    since: z.string().optional()
+  })
+};
+
 module.exports = {
   syncPushSchema,
-  syncPullSchema
+  syncPullSchema,
+  syncRestoreSchema
 };

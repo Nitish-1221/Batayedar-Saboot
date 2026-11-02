@@ -223,6 +223,9 @@ class EvidenceRepository(
 
         evidenceDao.insertEvidence(evidenceEntity)
 
+        // Ensure crop record is marked as pending upload since new evidence was attached
+        cropRecordDao.updateSyncStatus(recordId, SyncStatus.LOCAL_ONLY, null, nowUtc)
+
         // Log audit event
         auditLogDao.insertLog(
             AuditLogEntity(
@@ -314,8 +317,6 @@ class EvidenceRepository(
     }
 
     fun generateEvidenceId(): String {
-        val datePart = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
-        val randomPart = UUID.randomUUID().toString().take(4).uppercase(Locale.US)
-        return "EVD-$datePart-$randomPart"
+        return UUID.randomUUID().toString()
     }
 }

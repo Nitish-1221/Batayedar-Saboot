@@ -35,17 +35,43 @@
     <string name="no_recent_records">No cultivation records added yet. Tap \'Add Crop Evidence\' to create your first crop record!</string>
 
     <!-- Sync Statuses -->
+    <string name="sync_state_offline">Offline</string>
+    <string name="sync_state_online_not_synced">Online — Not Synced</string>
+    <string name="sync_state_syncing">Syncing…</string>
+    <string name="sync_state_synced">Synced</string>
+    <string name="sync_state_sync_failed">Sync Failed</string>
+    <string name="sync_dialog_title">Cloud Synchronization</string>
+    <string name="sync_pending_uploads_format">Pending Uploads: %d</string>
+    <string name="sync_pending_downloads_format">Pending Downloads: %d</string>
+    <string name="sync_last_synced_format">Last Synced: %s</string>
+    <string name="sync_never_synced">Never</string>
     <string name="sync_status_online">Online Mode</string>
-    <string name="sync_status_online_syncing">Online (Syncing %d)</string>
-    <string name="sync_status_offline">Offline Mode (Local Safe)</string>
-    <string name="sync_status_offline_no_net">Offline Mode (No Internet)</string>
-    <string name="sync_status_pending">Pending Sync (%d items)</string>
-    <string name="sync_status_synced">Synced with Cloud</string>
-    <string name="sync_status_failed">Sync Failed (Will Retry)</string>
+    <string name="sync_status_online_syncing">Syncing (%d)</string>
+    <string name="sync_status_offline">Offline Mode</string>
+    <string name="sync_btn_sync_now">Sync Now</string>
+    <string name="sync_btn_restore_cloud">Restore Cloud Backup</string>
+    <string name="backup_restoring_title">Restoring Cloud Backup</string>
+    <string name="backup_restoring_msg">Restoring your crop records, field data, and verified photos from cloud…</string>
+    <string name="backup_restored_success">Account data restored successfully!</string>
+    <string name="sync_status_offline_no_net">Offline (No Network)</string>
+    <string name="sync_status_pending">Pending Sync (%d)</string>
+    <string name="sync_status_synced">Synced</string>
+    <string name="sync_status_failed">Sync Failed</string>
     <string name="sync_value_online">Online</string>
-    <string name="sync_value_synced">Cloud Synced</string>
-    <string name="sync_value_offline">Offline Safe</string>
+    <string name="sync_value_synced">Synced</string>
+    <string name="sync_value_offline">Offline</string>
     <string name="sync_banner_notice">All evidence is permanently stored on your phone. Cloud sync is optional and never deletes local data.</string>
+    <string name="btn_upload_data">Upload Data</string>
+    <string name="btn_restore_data">Restore Data</string>
+    <string name="cloud_sync_title">Cloud Sync</string>
+    <string name="upload_progress_format">Records uploaded: %1$d/%2$d  •  Photos uploaded: %3$d/%4$d</string>
+    <string name="restore_progress_format">Records restored: %1$d  •  Photos downloaded: %2$d</string>
+    <string name="failed_photos_format">Failed photos: %d</string>
+    <string name="last_upload_format">Last Upload: %s</string>
+    <string name="last_restore_format">Last Restore: %s</string>
+    <string name="timestamp_never">Never</string>
+    <string name="uploading_in_progress">Uploading data to cloud…</string>
+    <string name="restore_in_progress">Restoring data from cloud…</string>
 
     <!-- Profile -->
     <string name="profile_title">Farmer Profile</string>

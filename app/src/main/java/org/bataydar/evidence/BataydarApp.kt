@@ -29,6 +29,7 @@ class BataydarApp : Application() {
             evidenceDao = database.geotaggedEvidenceDao()
         )
     }
+    val cloudRestoreManager by lazy { org.bataydar.evidence.sync.CloudRestoreManager.getInstance(this) }
     val pdfExporter by lazy { PdfDossierExporter(this) }
     val zipExporter by lazy { ZipBundleExporter(this, pdfExporter) }
     val tokenManager by lazy { org.bataydar.evidence.data.remote.auth.TokenManager.getInstance(this) }
@@ -60,6 +61,8 @@ class BataydarApp : Application() {
         androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
             androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
         )
+        syncManager.schedulePeriodicSync()
+        syncManager.schedulePeriodicKeepAlive()
     }
 
     companion object {

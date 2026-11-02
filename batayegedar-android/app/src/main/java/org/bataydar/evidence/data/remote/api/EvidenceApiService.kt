@@ -20,6 +20,9 @@ interface EvidenceApiService {
     @GET("evidence/{evidenceId}")
     suspend fun getEvidenceById(@Path("evidenceId") evidenceId: String): Response<ApiResponse<EvidenceData>>
 
+    @GET("evidence/{evidenceId}/download-url")
+    suspend fun getDownloadUrl(@Path("evidenceId") evidenceId: String): Response<ApiResponse<DownloadUrlData>>
+
     @DELETE("evidence/{evidenceId}")
     suspend fun deleteEvidence(@Path("evidenceId") evidenceId: String): Response<ApiResponse<Unit>>
 

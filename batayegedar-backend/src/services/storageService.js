@@ -3,12 +3,40 @@ const fs = require('fs');
 const path = require('path');
 const { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const cloudinary = require('cloudinary').v2;
 const config = require('../config');
 
 // Ensure local storage directory exists if using local provider
 const LOCAL_STORAGE_DIR = path.resolve(__dirname, '../../uploads');
 if (!fs.existsSync(LOCAL_STORAGE_DIR)) {
   fs.mkdirSync(LOCAL_STORAGE_DIR, { recursive: true });
+}
+
+function isCloudinaryConfigured() {
+  return !!(
+    process.env.CLOUDINARY_URL ||
+    (config.cloudinary && config.cloudinary.url) ||
+    (config.cloudinary && config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret)
+  );
+}
+
+if (isCloudinaryConfigured()) {
+  try {
+    if (config.cloudinary.url || process.env.CLOUDINARY_URL) {
+      cloudinary.config({
+        cloudinary_url: config.cloudinary.url || process.env.CLOUDINARY_URL
+      });
+    } else {
+      cloudinary.config({
+        cloud_name: config.cloudinary.cloudName,
+        api_key: config.cloudinary.apiKey,
+        api_secret: config.cloudinary.apiSecret,
+        secure: true
+      });
+    }
+  } catch (err) {
+    console.warn('[Cloudinary] Initialization warning:', err.message);
+  }
 }
 
 let s3Client = null;
@@ -209,14 +237,38 @@ async function getObjectBuffer(objectKey) {
 }
 
 /**
+ * Upload a binary buffer directly to Cloudinary
+ */
+async function uploadBufferToCloudinary(buffer, { folder, public_id, metadata = {} } = {}) {
+  if (!isCloudinaryConfigured()) return null;
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: folder || config.cloudinary.folder || 'batayedar_evidence',
+        public_id,
+        resource_type: 'image',
+        overwrite: true,
+        context: metadata
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
+/**
  * Server-side verification of uploaded object:
  * - Checks file exists
  * - Checks size limits
  * - Inspects magic bytes (MIME type verification)
  * - Computes true SHA-256 hash
  * - Compares with client-reported checksum
+ * - If Cloudinary is configured, uploads verified photo to Cloudinary
  */
-async function verifyUploadedEvidence(objectKey, clientReportedChecksum) {
+async function verifyUploadedEvidence(objectKey, clientReportedChecksum, { evidenceId, farmerId, recordId } = {}) {
   const buffer = await getObjectBuffer(objectKey);
 
   if (buffer.length === 0) {
@@ -248,20 +300,56 @@ async function verifyUploadedEvidence(objectKey, clientReportedChecksum) {
   const normalizedClientChecksum = (clientReportedChecksum || '').toLowerCase().trim();
   const hashMatch = normalizedClientChecksum ? calculatedSha256 === normalizedClientChecksum : false;
 
+  let cloudinaryResult = null;
+  if (isCloudinaryConfigured()) {
+    try {
+      const folder = `${config.cloudinary.folder}/${farmerId || 'general'}/${recordId || 'records'}`;
+      cloudinaryResult = await uploadBufferToCloudinary(buffer, {
+        folder,
+        public_id: evidenceId || path.basename(objectKey, path.extname(objectKey)),
+        metadata: {
+          sha256: calculatedSha256,
+          farmerId: farmerId || '',
+          recordId: recordId || ''
+        }
+      });
+    } catch (cErr) {
+      console.warn('[Cloudinary] Upload failed during verification, falling back to storage:', cErr.message);
+    }
+  }
+
   return {
     success: true,
     fileSizeBytes: buffer.length,
     detectedMimeType: detectedMime,
     serverSha256: calculatedSha256,
     clientSha256: normalizedClientChecksum,
-    hashMatch
+    hashMatch,
+    cloudinaryUrl: cloudinaryResult ? cloudinaryResult.secure_url : '',
+    cloudinaryPublicId: cloudinaryResult ? cloudinaryResult.public_id : '',
+    storageProvider: cloudinaryResult ? 'cloudinary' : (config.storage.provider === 's3' ? 's3' : 'local')
   };
 }
 
 /**
  * Generate a short-lived download / view URL for authorized farmer
  */
-async function generateDownloadUrl({ objectKey, farmerId }) {
+async function generateDownloadUrl(paramsOrKey, maybeFarmerId, maybeCloudinaryUrl) {
+  let objectKey, farmerId, cloudinaryUrl;
+  if (typeof paramsOrKey === 'object' && paramsOrKey !== null) {
+    ({ objectKey, farmerId, cloudinaryUrl } = paramsOrKey);
+  } else {
+    objectKey = paramsOrKey;
+    farmerId = maybeFarmerId;
+    cloudinaryUrl = maybeCloudinaryUrl;
+  }
+  if (cloudinaryUrl) {
+    return {
+      downloadUrl: cloudinaryUrl,
+      expiresInSeconds: config.storage.presignedUrlExpiresSeconds
+    };
+  }
+
   if (config.storage.provider === 's3' && s3Client) {
     const command = new GetObjectCommand({
       Bucket: config.storage.s3BucketName,
@@ -325,5 +413,7 @@ module.exports = {
   generateLocalUploadToken,
   verifyLocalUploadToken,
   generateLocalDownloadToken,
-  verifyLocalDownloadToken
+  verifyLocalDownloadToken,
+  isCloudinaryConfigured,
+  uploadBufferToCloudinary
 };

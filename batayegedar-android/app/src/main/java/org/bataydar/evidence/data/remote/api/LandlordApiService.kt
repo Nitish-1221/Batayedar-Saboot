@@ -31,4 +31,3 @@ interface LandlordApiService {
     @GET("users/me")
     suspend fun getProfile(): Response<ApiResponse<ProfileData>>
 }
-

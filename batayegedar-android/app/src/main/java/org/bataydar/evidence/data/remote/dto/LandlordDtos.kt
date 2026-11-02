@@ -133,4 +133,3 @@ data class LandlordHistoryItemDto(
     @SerializedName("fieldName") val fieldName: String? = null,
     @SerializedName("cropType") val cropType: String? = null
 )
-

@@ -34,7 +34,12 @@ async function requestUploadUrl(req, res, next) {
       });
     }
 
-    if (cropRecord.farmerId !== req.farmerId) {
+    const isOwner = (cropRecord.farmerId === req.farmerId) ||
+      (req.firebaseUid && cropRecord.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && cropRecord.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && cropRecord.farmerId === req.user.userId);
+
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to add evidence to this record' }
@@ -61,6 +66,7 @@ async function requestUploadUrl(req, res, next) {
       evidenceId: id,
       recordId,
       farmerId: req.farmerId,
+      firebaseUid: req.firebaseUid || req.user?.firebaseUid || req.farmerId,
       s3ObjectKey: uploadMeta.objectKey,
       s3Bucket: uploadMeta.bucket,
       mimeType: contentType || 'image/jpeg',
@@ -123,7 +129,12 @@ async function completeUpload(req, res, next) {
       });
     }
 
-    if (evidence.farmerId !== req.farmerId) {
+    const isOwner = (evidence.farmerId === req.farmerId) ||
+      (req.firebaseUid && evidence.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && evidence.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && evidence.farmerId === req.user.userId);
+
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to finalize this evidence' }
@@ -133,7 +144,12 @@ async function completeUpload(req, res, next) {
     // Verify stored object on storage (checks file existence, size, magic bytes, SHA-256)
     const verification = await storageService.verifyUploadedEvidence(
       evidence.s3ObjectKey,
-      clientReportedChecksum || evidence.clientReportedChecksum
+      clientReportedChecksum || evidence.clientReportedChecksum,
+      {
+        evidenceId: evidence.evidenceId,
+        farmerId: evidence.farmerId,
+        recordId: evidence.recordId
+      }
     );
 
     if (!verification.success) {
@@ -165,6 +181,14 @@ async function completeUpload(req, res, next) {
     evidence.hashMatch = verification.hashMatch;
     evidence.fileSizeBytes = verification.fileSizeBytes;
     evidence.mimeType = verification.detectedMimeType;
+    if (verification.cloudinaryUrl) {
+      evidence.cloudinaryUrl = verification.cloudinaryUrl;
+      evidence.cloudinaryPublicId = verification.cloudinaryPublicId;
+      evidence.storageProvider = 'cloudinary';
+    }
+    if (req.firebaseUid) {
+      evidence.firebaseUid = req.firebaseUid;
+    }
 
     if (!evidence.gpsAccuracyAcceptable) {
       evidence.validationStatus = 'FLAGGED_INACCURATE';
@@ -216,7 +240,12 @@ async function getRecordEvidence(req, res, next) {
       });
     }
 
-    if (cropRecord.farmerId !== req.farmerId) {
+    const isCropOwner = (cropRecord.farmerId === req.farmerId) ||
+      (req.firebaseUid && cropRecord.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && cropRecord.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && cropRecord.farmerId === req.user.userId);
+
+    if (!isCropOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to view evidence for this record' }
@@ -248,7 +277,12 @@ async function getEvidenceById(req, res, next) {
       });
     }
 
-    if (evidence.farmerId !== req.farmerId) {
+    const isEvOwner = (evidence.farmerId === req.farmerId) ||
+      (req.firebaseUid && evidence.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && evidence.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && evidence.farmerId === req.user.userId);
+
+    if (!isEvOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to access this evidence' }
@@ -276,7 +310,12 @@ async function getDownloadUrl(req, res, next) {
       });
     }
 
-    if (evidence.farmerId !== req.farmerId) {
+    const isDlOwner = (evidence.farmerId === req.farmerId) ||
+      (req.firebaseUid && evidence.firebaseUid === req.firebaseUid) ||
+      (req.user?.firebaseUid && evidence.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && evidence.farmerId === req.user.userId);
+
+    if (!isDlOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to download this evidence' }
@@ -285,7 +324,8 @@ async function getDownloadUrl(req, res, next) {
 
     const downloadInfo = await storageService.generateDownloadUrl({
       objectKey: evidence.s3ObjectKey,
-      farmerId: req.farmerId
+      farmerId: req.farmerId,
+      cloudinaryUrl: evidence.cloudinaryUrl
     });
 
     await recordAudit({

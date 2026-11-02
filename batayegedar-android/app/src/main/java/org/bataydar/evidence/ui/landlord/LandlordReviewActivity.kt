@@ -253,4 +253,3 @@ class LandlordReviewActivity : AppCompatActivity() {
         const val EXTRA_CONFIRMATION_ID = "EXTRA_CONFIRMATION_ID"
     }
 }
-

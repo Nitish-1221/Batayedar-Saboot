@@ -1,0 +1,31 @@
+name: Backend 24/7 Keep-Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent Render free tier from sleeping after 15 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Allow manual triggering from GitHub web console
+
+jobs:
+  ping-render:
+    name: Ping Render Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          echo "Pinging https://batayedar-saboot.onrender.com/api/v1/health at $(date -u)"
+          STATUS=$(curl -s -o response.json -w "%{http_code}" -m 60 "https://batayedar-saboot.onrender.com/api/v1/health" || echo "FAILED")
+          echo "HTTP Response Status: $STATUS"
+          if [ -f response.json ]; then
+            cat response.json
+            echo ""
+          fi
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "SUCCESS: Backend is online and active!"
+          else
+            echo "WARNING: Backend returned status $STATUS or connection timed out during wake-up."
+          fi
+

@@ -15,6 +15,11 @@ const evidenceSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    firebaseUid: {
+      type: String,
+      sparse: true,
+      index: true
+    },
     s3ObjectKey: {
       type: String,
       required: true
@@ -22,6 +27,20 @@ const evidenceSchema = new mongoose.Schema(
     s3Bucket: {
       type: String,
       required: true
+    },
+    cloudinaryUrl: {
+      type: String,
+      default: ''
+    },
+    cloudinaryPublicId: {
+      type: String,
+      default: '',
+      index: true
+    },
+    storageProvider: {
+      type: String,
+      enum: ['cloudinary', 's3', 'local'],
+      default: 'local'
     },
     sha256Checksum: {
       type: String,

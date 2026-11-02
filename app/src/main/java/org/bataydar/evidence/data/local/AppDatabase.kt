@@ -28,6 +28,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun geotaggedEvidenceDao(): GeotaggedEvidenceDao
     abstract fun auditLogDao(): AuditLogDao
 
+    suspend fun clearUserData() {
+        farmerProfileDao().deleteAll()
+        cropRecordDao().deleteAllRecords()
+        geotaggedEvidenceDao().deleteAllEvidence()
+    }
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

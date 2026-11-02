@@ -3,7 +3,7 @@ const { z } = require('zod');
 const requestUploadUrlSchema = {
   body: z.object({
     recordId: z.string().min(1, 'Record ID is required'),
-    evidenceId: z.string().uuid().optional(),
+    evidenceId: z.string().min(1).optional(),
     fileName: z.string().optional(),
     fileExtension: z.string().regex(/^(jpg|jpeg|png|webp)$/i, 'File extension must be jpg, jpeg, png, or webp').default('jpg'),
     contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']).default('image/jpeg'),

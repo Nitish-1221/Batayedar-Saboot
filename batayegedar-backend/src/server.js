@@ -1,6 +1,7 @@
 const app = require('./app');
 const config = require('./config');
 const { connectDB, disconnectDB } = require('./config/db');
+const { startKeepAlive, stopKeepAlive } = require('./services/keepAliveService');
 
 async function startServer() {
   try {
@@ -18,10 +19,16 @@ async function startServer() {
       console.log(`API endpoints accessible at http://localhost:${config.port}${config.apiPrefix}`);
       console.log(`Health check available at http://localhost:${config.port}${config.apiPrefix}/health`);
       console.log(`Swagger documentation available at http://localhost:${config.port}/api-docs`);
+
+      // Start auto-ping keep-alive if in production, on Render, or when AUTO_PING=true
+      if (config.env === 'production' || process.env.RENDER || process.env.AUTO_PING === 'true') {
+        startKeepAlive();
+      }
     });
 
     const shutdown = async (signal) => {
       console.log(`Received ${signal}. Shutting down gracefully...`);
+      stopKeepAlive();
       server.close(async () => {
         await disconnectDB();
         console.log('Server and database connections closed cleanly.');

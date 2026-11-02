@@ -76,6 +76,48 @@ class TokenManager(context: Context) {
 
     fun isLandlord(): Boolean = getUserRole() == ROLE_LANDLORD
 
+    fun saveLastSyncTimestamp(timestamp: Long) {
+        prefs.edit().putLong(KEY_LAST_SYNC_TIMESTAMP, timestamp).apply()
+    }
+
+    fun getLastSyncTimestamp(): Long = prefs.getLong(KEY_LAST_SYNC_TIMESTAMP, 0L)
+
+    fun saveLastSyncStatus(status: String) {
+        prefs.edit().putString(KEY_LAST_SYNC_STATUS, status).apply()
+    }
+
+    fun getLastSyncStatus(): String? = prefs.getString(KEY_LAST_SYNC_STATUS, null)
+
+    fun saveLastSyncMessage(message: String?) {
+        prefs.edit().putString(KEY_LAST_SYNC_MESSAGE, message).apply()
+    }
+
+    fun getLastSyncMessage(): String? = prefs.getString(KEY_LAST_SYNC_MESSAGE, null)
+
+    fun saveLastUploadTimestamp(timestamp: Long) {
+        prefs.edit().putLong(KEY_LAST_UPLOAD_TIMESTAMP, timestamp).apply()
+    }
+
+    fun getLastUploadTimestamp(): Long = prefs.getLong(KEY_LAST_UPLOAD_TIMESTAMP, 0L)
+
+    fun saveLastRestoreTimestamp(timestamp: Long) {
+        prefs.edit().putLong(KEY_LAST_RESTORE_TIMESTAMP, timestamp).apply()
+    }
+
+    fun getLastRestoreTimestamp(): Long = prefs.getLong(KEY_LAST_RESTORE_TIMESTAMP, 0L)
+
+    fun saveLastUploadSummary(summary: String?) {
+        prefs.edit().putString(KEY_LAST_UPLOAD_SUMMARY, summary).apply()
+    }
+
+    fun getLastUploadSummary(): String? = prefs.getString(KEY_LAST_UPLOAD_SUMMARY, null)
+
+    fun saveLastRestoreSummary(summary: String?) {
+        prefs.edit().putString(KEY_LAST_RESTORE_SUMMARY, summary).apply()
+    }
+
+    fun getLastRestoreSummary(): String? = prefs.getString(KEY_LAST_RESTORE_SUMMARY, null)
+
     fun clear() {
         prefs.edit().clear().apply()
     }
@@ -91,6 +133,13 @@ class TokenManager(context: Context) {
         private const val KEY_USER_NAME = "auth_user_name"
         private const val KEY_USER_PHONE = "auth_user_phone"
         private const val KEY_USER_EMAIL = "auth_user_email"
+        private const val KEY_LAST_SYNC_TIMESTAMP = "key_last_sync_timestamp"
+        private const val KEY_LAST_SYNC_STATUS = "key_last_sync_status"
+        private const val KEY_LAST_SYNC_MESSAGE = "key_last_sync_message"
+        private const val KEY_LAST_UPLOAD_TIMESTAMP = "key_last_upload_timestamp"
+        private const val KEY_LAST_RESTORE_TIMESTAMP = "key_last_restore_timestamp"
+        private const val KEY_LAST_UPLOAD_SUMMARY = "key_last_upload_summary"
+        private const val KEY_LAST_RESTORE_SUMMARY = "key_last_restore_summary"
 
         @Volatile
         private var instance: TokenManager? = null

@@ -209,4 +209,3 @@ class LandlordRoleAndNavigationTest {
         assertEquals("MainActivity", determineDestinationScreen(null, true))
     }
 }
-

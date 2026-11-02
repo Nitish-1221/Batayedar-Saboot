@@ -95,4 +95,3 @@ class LandlordHomeFragment : Fragment() {
         _binding = null
     }
 }
-

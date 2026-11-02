@@ -17,4 +17,3 @@
         android:icon="@drawable/ic_person"
         android:title="@string/landlord_nav_profile" />
 </menu>
-

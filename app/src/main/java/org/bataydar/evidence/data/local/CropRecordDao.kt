@@ -34,18 +34,42 @@ interface CropRecordDao {
     @Query("SELECT COUNT(*) FROM crop_records WHERE landlordConfirmationStatus = 'REQUESTED'")
     fun getAwaitingLandlordCount(): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM crop_records WHERE syncStatus = 'PENDING_SYNC'")
+    @Query("SELECT COUNT(*) FROM crop_records WHERE syncStatus != 'SYNCED'")
     fun getPendingSyncCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM crop_records WHERE syncStatus != 'SYNCED'")
+    suspend fun getPendingSyncCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM crop_records")
+    suspend fun getTotalRecordsCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM crop_records WHERE syncStatus = 'SYNCED'")
+    suspend fun getSyncedRecordsCountDirect(): Int
+
+    @Query("SELECT COUNT(*) FROM crop_records WHERE syncStatus = 'SYNC_FAILED'")
+    suspend fun getFailedRecordsCountDirect(): Int
 
     @Transaction
     @Query("SELECT * FROM crop_records ORDER BY createdAt DESC LIMIT :limit")
     fun getRecentRecords(limit: Int = 5): Flow<List<RecordWithEvidence>>
 
-    @Query("SELECT * FROM crop_records WHERE syncStatus = 'PENDING_SYNC' OR syncStatus = 'SYNC_FAILED'")
+    @Query("SELECT * FROM crop_records WHERE recordId = :recordId LIMIT 1")
+    suspend fun getRecordById(recordId: String): CropRecordEntity?
+
+    @Query("SELECT * FROM crop_records WHERE syncStatus != 'SYNCED'")
     suspend fun getPendingRecords(): List<CropRecordEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: CropRecordEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRecords(records: List<CropRecordEntity>)
+
+    @Query("DELETE FROM crop_records")
+    suspend fun deleteAllRecords()
+
+    @Query("DELETE FROM crop_records WHERE farmerId != :currentFarmerId")
+    suspend fun deleteOtherFarmerRecords(currentFarmerId: String)
 
     @Update
     suspend fun updateRecord(record: CropRecordEntity)

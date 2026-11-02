@@ -56,6 +56,15 @@ class RecordsListFragment : Fragment() {
         observeRecords()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (BataydarApp.instance.authRepository.isLoggedIn() && BataydarApp.instance.networkMonitor.isOnline()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                BataydarApp.instance.cloudSyncEngine.triggerSync()
+            }
+        }
+    }
+
     private fun setupRecyclerView() {
         adapter = RecordsAdapter { item ->
             val intent = Intent(requireContext(), RecordDetailActivity::class.java).apply {

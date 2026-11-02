@@ -11,6 +11,11 @@ const fieldSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    firebaseUid: {
+      type: String,
+      sparse: true,
+      index: true
+    },
     fieldName: {
       type: String,
       required: true,

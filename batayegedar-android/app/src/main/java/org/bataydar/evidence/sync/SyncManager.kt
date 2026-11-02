@@ -57,10 +57,36 @@ class SyncManager(private val context: Context) {
         )
     }
 
+    /**
+     * Schedule periodic backend keep-alive ping (every 15 minutes) when connected to any network
+     * to keep Render backend container awake.
+     */
+    fun schedulePeriodicKeepAlive() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val keepAliveRequest = PeriodicWorkRequestBuilder<KeepAliveWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                5,
+                TimeUnit.MINUTES
+            )
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            UNIQUE_WORK_NAME_KEEP_ALIVE,
+            ExistingPeriodicWorkPolicy.KEEP,
+            keepAliveRequest
+        )
+    }
+
     companion object {
         const val TAG_ONE_TIME_SYNC = "tag_batayedar_sync"
         private const val UNIQUE_WORK_NAME_IMMEDIATE = "work_batayedar_immediate_sync"
         private const val UNIQUE_WORK_NAME_PERIODIC = "work_batayedar_periodic_sync"
+        private const val UNIQUE_WORK_NAME_KEEP_ALIVE = "work_batayedar_keep_alive"
 
         @Volatile
         private var instance: SyncManager? = null

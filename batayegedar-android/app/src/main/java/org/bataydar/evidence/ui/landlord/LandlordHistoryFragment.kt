@@ -80,4 +80,3 @@ class LandlordHistoryFragment : Fragment() {
         _binding = null
     }
 }
-

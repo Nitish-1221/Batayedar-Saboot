@@ -149,10 +149,32 @@ class LoginActivity : AppCompatActivity() {
                     Snackbar.make(binding.root, R.string.auth_error_role_mismatch_landlord, Snackbar.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(this@LoginActivity, R.string.auth_login_success, Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
+                    
+                    val progressDialog = MaterialAlertDialogBuilder(this@LoginActivity)
+                        .setTitle(R.string.backup_restoring_title)
+                        .setMessage(R.string.backup_restoring_msg)
+                        .setCancelable(false)
+                        .create()
+                    progressDialog.show()
+
+                    lifecycleScope.launch {
+                        try {
+                            val uid = tokenManager.getUserId().orEmpty()
+                            BataydarApp.instance.cloudRestoreManager.clearLocalDataIfDifferentAccount(uid)
+                            BataydarApp.instance.cloudRestoreManager.restoreUserData()
+                        } catch (e: Exception) {
+                            android.util.Log.e("LoginActivity", "Initial restore error: ${e.message}")
+                        } finally {
+                            try {
+                                if (progressDialog.isShowing) progressDialog.dismiss()
+                            } catch (e: Exception) {}
+                            BataydarApp.instance.syncManager.enqueueImmediateSync()
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
                 }
             }.onFailure { err ->
                 val errorMsg = if (err is RoleMismatchException) {
@@ -213,6 +235,7 @@ class LoginActivity : AppCompatActivity() {
             setLoading(false)
             result.onSuccess {
                 Toast.makeText(this@LoginActivity, R.string.auth_register_success, Toast.LENGTH_SHORT).show()
+                BataydarApp.instance.syncManager.enqueueImmediateSync()
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
