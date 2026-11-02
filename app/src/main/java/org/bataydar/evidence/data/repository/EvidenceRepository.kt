@@ -41,64 +41,81 @@ class EvidenceRepository(
 
     private val tokenManager by lazy { TokenManager.getInstance(context) }
 
+    fun getEffectiveUid(uid: String = ""): String {
+        if (uid.isNotBlank()) return uid
+        val activeUid = tokenManager.getActiveUid()
+        if (activeUid.isNotBlank()) return activeUid
+        val firebaseUid = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
+        if (!firebaseUid.isNullOrBlank()) return firebaseUid
+        return ""
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val allRecordsFlow: Flow<List<RecordWithEvidence>> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(emptyList())
-        else cropRecordDao.getAllRecordsWithEvidenceFlow(uid)
+        val effUid = getEffectiveUid(uid)
+        cropRecordDao.getAllRecordsWithEvidenceFlow(effUid)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val totalFieldsCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(0)
-        else cropRecordDao.getTotalFieldsCount(uid)
+        val effUid = getEffectiveUid(uid)
+        cropRecordDao.getTotalFieldsCount(effUid)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val totalEvidenceCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(0)
-        else evidenceDao.getTotalEvidenceCount(uid)
+        val effUid = getEffectiveUid(uid)
+        evidenceDao.getTotalEvidenceCount(effUid)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val awaitingLandlordCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(0)
-        else cropRecordDao.getAwaitingLandlordCount(uid)
+        val effUid = getEffectiveUid(uid)
+        cropRecordDao.getAwaitingLandlordCount(effUid)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val pendingSyncCount: Flow<Int> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(0)
-        else cropRecordDao.getPendingSyncCount(uid)
+        val effUid = getEffectiveUid(uid)
+        cropRecordDao.getPendingSyncCount(effUid)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getRecentRecords(limit: Int = 5): Flow<List<RecordWithEvidence>> = tokenManager.activeUserUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(emptyList())
-        else cropRecordDao.getRecentRecords(limit, uid)
+        val effUid = getEffectiveUid(uid)
+        cropRecordDao.getRecentRecords(limit, effUid)
     }
 
     suspend fun getRecordWithEvidence(recordId: String): RecordWithEvidence? {
-        val uid = tokenManager.getActiveUid()
+        val uid = getEffectiveUid()
         return if (uid.isNotBlank()) {
-            cropRecordDao.getRecordWithEvidence(recordId, uid)
+            cropRecordDao.getRecordWithEvidence(recordId, uid) ?: cropRecordDao.getRecordWithEvidence(recordId)
         } else {
             cropRecordDao.getRecordWithEvidence(recordId)
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getRecordWithEvidenceFlow(recordId: String): Flow<RecordWithEvidence?> {
-        val uid = tokenManager.getActiveUid()
+        val uid = getEffectiveUid()
         return if (uid.isNotBlank()) {
-            cropRecordDao.getRecordWithEvidenceFlow(recordId, uid)
+            cropRecordDao.getRecordWithEvidenceFlow(recordId, uid).flatMapLatest { item ->
+                if (item != null) flowOf(item)
+                else cropRecordDao.getRecordWithEvidenceFlow(recordId)
+            }
         } else {
             cropRecordDao.getRecordWithEvidenceFlow(recordId)
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getEvidenceForRecordFlow(recordId: String): Flow<List<GeotaggedEvidenceEntity>> {
-        val uid = tokenManager.getActiveUid()
+        val uid = getEffectiveUid()
         return if (uid.isNotBlank()) {
-            evidenceDao.getEvidenceForRecordFlow(recordId, uid)
+            evidenceDao.getEvidenceForRecordFlow(recordId, uid).flatMapLatest { list ->
+                if (list.isNotEmpty()) flowOf(list)
+                else evidenceDao.getEvidenceForRecordFlow(recordId)
+            }
         } else {
             evidenceDao.getEvidenceForRecordFlow(recordId)
         }
@@ -134,9 +151,7 @@ class EvidenceRepository(
             return@withContext Result.failure(IllegalArgumentException("Sowing date is required"))
         }
 
-        val currentUid = tokenManager.getActiveUid().ifEmpty {
-            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: farmerId
-        }
+        val currentUid = getEffectiveUid().ifEmpty { farmerId }
 
         val recordId = generateRecordId()
         val entity = CropRecordEntity(
@@ -261,9 +276,7 @@ class EvidenceRepository(
         val deviceModel = "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})"
 
         val currentUid = record.ownerFirebaseUid.ifEmpty {
-            tokenManager.getActiveUid().ifEmpty {
-                com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
-            }
+            getEffectiveUid()
         }
 
         val evidenceEntity = GeotaggedEvidenceEntity(

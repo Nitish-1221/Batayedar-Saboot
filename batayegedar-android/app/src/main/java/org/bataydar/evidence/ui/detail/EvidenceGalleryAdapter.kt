@@ -54,18 +54,20 @@ class EvidenceGalleryAdapter(
                 onDeleteClick(item)
             }
 
-            val photoPath = item.watermarkedPhotoPath ?: item.originalPhotoPath
+            val candidatePaths = listOfNotNull(item.watermarkedPhotoPath, item.originalPhotoPath)
             CoroutineScope(Dispatchers.Main).launch {
                 val bitmap = withContext(Dispatchers.IO) {
-                    try {
-                        val file = File(photoPath)
-                        if (file.exists()) {
-                            val opts = BitmapFactory.Options().apply { inSampleSize = 2 }
-                            BitmapFactory.decodeFile(photoPath, opts)
-                        } else null
-                    } catch (e: Exception) {
-                        null
+                    for (path in candidatePaths) {
+                        try {
+                            val file = File(path)
+                            if (file.exists() && file.length() > 0L) {
+                                val opts = BitmapFactory.Options().apply { inSampleSize = 2 }
+                                val bmp = BitmapFactory.decodeFile(path, opts)
+                                if (bmp != null) return@withContext bmp
+                            }
+                        } catch (_: Exception) {}
                     }
+                    null
                 }
                 if (bitmap != null) {
                     binding.ivEvidencePhoto.setImageBitmap(bitmap)

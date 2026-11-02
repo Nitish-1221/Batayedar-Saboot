@@ -19,14 +19,23 @@ class FarmerProfileRepository(
 
     private val activeUidFlow: Flow<String> = tokenManager?.activeUserUidFlow ?: flowOf("")
 
+    fun getEffectiveUid(uid: String = ""): String {
+        if (uid.isNotBlank()) return uid
+        val activeUid = tokenManager?.getActiveUid().orEmpty()
+        if (activeUid.isNotBlank()) return activeUid
+        val firebaseUid = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
+        if (!firebaseUid.isNullOrBlank()) return firebaseUid
+        return ""
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val profileFlow: Flow<FarmerProfileEntity?> = activeUidFlow.flatMapLatest { uid ->
-        if (uid.isBlank()) flowOf(null)
-        else profileDao.getProfileFlow(uid)
+        val effUid = getEffectiveUid(uid)
+        profileDao.getProfileFlow(effUid)
     }
 
     suspend fun getProfile(): FarmerProfileEntity? {
-        val uid = tokenManager?.getActiveUid() ?: ""
+        val uid = getEffectiveUid()
         return if (uid.isNotBlank()) profileDao.getProfile(uid) else profileDao.getProfile()
     }
 

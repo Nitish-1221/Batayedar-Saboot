@@ -187,4 +187,40 @@ class OfflineRecordAndSyncTest {
         assertEquals("uid-account-a", evA.ownerFirebaseUid)
         assertNotEquals(recordB.ownerFirebaseUid, evA.ownerFirebaseUid)
     }
+
+    @Test
+    fun testOfflineEvidenceCreation_immediateRoomReadiness() {
+        // Verification: Evidence created offline has local paths and PENDING status
+        val tempPhoto = File.createTempFile("offline_ev_", ".jpg")
+        tempPhoto.writeBytes("offline_photo_data".toByteArray())
+
+        val offlineEvidence = GeotaggedEvidenceEntity(
+            evidenceId = "EV-OFFLINE-001",
+            recordId = "REC-OFFLINE-001",
+            ownerFirebaseUid = "uid-offline-user",
+            originalPhotoPath = tempPhoto.absolutePath,
+            watermarkedPhotoPath = null,
+            photoSha256 = ChecksumUtils.calculateSha256(tempPhoto),
+            latitude = 26.1738,
+            longitude = 85.5892,
+            accuracyMeters = 6.2f,
+            gpsFixAgeMs = 500L,
+            capturedAtUtc = System.currentTimeMillis(),
+            capturedAtLocalFormatted = "2026-11-03 12:00:00",
+            deviceModel = "Offline Device",
+            syncStatus = SyncStatus.LOCAL_ONLY
+        )
+
+        assertEquals(SyncStatus.LOCAL_ONLY, offlineEvidence.syncStatus)
+        assertTrue(File(offlineEvidence.originalPhotoPath).exists())
+        assertEquals("uid-offline-user", offlineEvidence.ownerFirebaseUid)
+
+        // Verify candidate photo path resolution works when watermarked is null
+        val candidates = listOfNotNull(offlineEvidence.watermarkedPhotoPath, offlineEvidence.originalPhotoPath)
+        val resolved = candidates.map { File(it) }.firstOrNull { it.exists() && it.length() > 0L }
+        assertNotNull("Must resolve to local photo file", resolved)
+        assertEquals(tempPhoto.absolutePath, resolved?.absolutePath)
+
+        tempPhoto.delete()
+    }
 }

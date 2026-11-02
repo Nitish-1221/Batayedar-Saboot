@@ -89,10 +89,14 @@ class TokenAuthenticator(
                             .build()
                     }
                 }
+            } else if (refreshResponse.code in listOf(400, 401, 403)) {
+                // Refresh token is explicitly rejected by the server
+                tokenManager.clear()
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // Offline / network failure: NEVER clear tokenManager. Keep offline credentials intact.
+        }
 
-        tokenManager.clear()
         return null
     }
 

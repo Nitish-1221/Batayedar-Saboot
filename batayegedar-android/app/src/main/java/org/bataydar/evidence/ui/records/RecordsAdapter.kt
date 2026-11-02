@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.bataydar.evidence.R
 import org.bataydar.evidence.data.model.LandlordStatus
 import org.bataydar.evidence.data.model.RecordWithEvidence
+import org.bataydar.evidence.data.model.SyncStatus
 import org.bataydar.evidence.databinding.ItemRecordDetailedBinding
 import java.io.File
 import java.util.Locale
@@ -65,6 +66,35 @@ class RecordsAdapter(
                 }
             }
 
+            // Sync status badge
+            val isRecordSynced = record.syncStatus == SyncStatus.SYNCED
+            val arePhotosSynced = item.evidenceList.isEmpty() || item.evidenceList.all { it.syncStatus == SyncStatus.SYNCED }
+            val hasFailedSync = record.syncStatus == SyncStatus.SYNC_FAILED || item.evidenceList.any { it.syncStatus == SyncStatus.SYNC_FAILED }
+            val isDeletionPending = record.syncStatus == SyncStatus.DELETION_PENDING || item.evidenceList.any { it.syncStatus == SyncStatus.DELETION_PENDING }
+
+            when {
+                isDeletionPending -> {
+                    binding.tvSyncStatus.text = "Deleting..."
+                    binding.tvSyncStatus.setTextColor(ContextCompat.getColor(context, R.color.status_bad))
+                    binding.tvSyncStatus.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_bad_light)
+                }
+                hasFailedSync -> {
+                    binding.tvSyncStatus.text = "Sync Failed"
+                    binding.tvSyncStatus.setTextColor(ContextCompat.getColor(context, R.color.status_bad))
+                    binding.tvSyncStatus.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_bad_light)
+                }
+                isRecordSynced && arePhotosSynced -> {
+                    binding.tvSyncStatus.text = "Synced"
+                    binding.tvSyncStatus.setTextColor(ContextCompat.getColor(context, R.color.status_good))
+                    binding.tvSyncStatus.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_good_light)
+                }
+                else -> {
+                    binding.tvSyncStatus.text = "Pending Upload"
+                    binding.tvSyncStatus.setTextColor(ContextCompat.getColor(context, R.color.status_warning))
+                    binding.tvSyncStatus.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_warning_light)
+                }
+            }
+
             // Evidence photos & GPS
             if (item.evidenceList.isNotEmpty()) {
                 binding.layoutPhotoAndGps.visibility = View.VISIBLE
@@ -80,18 +110,23 @@ class RecordsAdapter(
                 )
                 binding.tvCapturedTime.text = "Captured: ${firstEvidence.capturedAtLocalFormatted}"
 
-                val photoPath = firstEvidence.watermarkedPhotoPath ?: firstEvidence.originalPhotoPath
+                val candidatePaths = listOfNotNull(
+                    firstEvidence.watermarkedPhotoPath,
+                    firstEvidence.originalPhotoPath
+                )
                 CoroutineScope(Dispatchers.Main).launch {
                     val bitmap = withContext(Dispatchers.IO) {
-                        try {
-                            val f = File(photoPath)
-                            if (f.exists()) {
-                                val opts = BitmapFactory.Options().apply { inSampleSize = 4 }
-                                BitmapFactory.decodeFile(photoPath, opts)
-                            } else null
-                        } catch (e: Exception) {
-                            null
+                        for (path in candidatePaths) {
+                            try {
+                                val f = File(path)
+                                if (f.exists() && f.length() > 0L) {
+                                    val opts = BitmapFactory.Options().apply { inSampleSize = 4 }
+                                    val bmp = BitmapFactory.decodeFile(path, opts)
+                                    if (bmp != null) return@withContext bmp
+                                }
+                            } catch (_: Exception) {}
                         }
+                        null
                     }
                     if (bitmap != null) {
                         binding.ivThumb.setImageBitmap(bitmap)

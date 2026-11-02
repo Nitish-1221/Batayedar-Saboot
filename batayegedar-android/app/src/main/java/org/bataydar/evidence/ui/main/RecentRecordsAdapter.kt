@@ -56,20 +56,25 @@ class RecentRecordsAdapter(
 
             // Thumbnail loading
             if (item.evidenceList.isNotEmpty()) {
-                val photoPath = item.evidenceList[0].watermarkedPhotoPath ?: item.evidenceList[0].originalPhotoPath
+                val candidatePaths = listOfNotNull(
+                    item.evidenceList[0].watermarkedPhotoPath,
+                    item.evidenceList[0].originalPhotoPath
+                )
                 CoroutineScope(Dispatchers.Main).launch {
                     val bitmap = withContext(Dispatchers.IO) {
-                        try {
-                            val f = File(photoPath)
-                            if (f.exists()) {
-                                val opts = BitmapFactory.Options().apply {
-                                    inSampleSize = 4
+                        for (path in candidatePaths) {
+                            try {
+                                val f = File(path)
+                                if (f.exists() && f.length() > 0L) {
+                                    val opts = BitmapFactory.Options().apply {
+                                        inSampleSize = 4
+                                    }
+                                    val bmp = BitmapFactory.decodeFile(path, opts)
+                                    if (bmp != null) return@withContext bmp
                                 }
-                                BitmapFactory.decodeFile(photoPath, opts)
-                            } else null
-                        } catch (e: Exception) {
-                            null
+                            } catch (_: Exception) {}
                         }
+                        null
                     }
                     if (bitmap != null) {
                         binding.ivThumbnail.setImageBitmap(bitmap)

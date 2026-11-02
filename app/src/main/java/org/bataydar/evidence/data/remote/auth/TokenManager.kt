@@ -27,10 +27,24 @@ class TokenManager(context: Context) {
         context.getSharedPreferences("batayedar_tokens_fallback", Context.MODE_PRIVATE)
     }
 
-    private val _activeUserUidFlow = MutableStateFlow(prefs.getString(KEY_USER_ID, null) ?: "")
+    private val _activeUserUidFlow = MutableStateFlow(
+        prefs.getString(KEY_USER_ID, null)?.takeIf { it.isNotBlank() }
+            ?: runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
+            ?: ""
+    )
     val activeUserUidFlow: StateFlow<String> = _activeUserUidFlow.asStateFlow()
 
-    fun getActiveUid(): String = getUserId() ?: ""
+    fun getActiveUid(): String {
+        val prefUid = getUserId()
+        if (!prefUid.isNullOrBlank()) return prefUid
+        val fbUid = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid }.getOrNull()
+        if (!fbUid.isNullOrBlank()) {
+            prefs.edit().putString(KEY_USER_ID, fbUid).apply()
+            _activeUserUidFlow.value = fbUid
+            return fbUid
+        }
+        return ""
+    }
 
     fun saveTokens(accessToken: String, refreshToken: String, userId: String? = null) {
         val editor = prefs.edit()
@@ -80,7 +94,11 @@ class TokenManager(context: Context) {
 
     fun getUserEmail(): String? = prefs.getString(KEY_USER_EMAIL, null)
 
-    fun isLoggedIn(): Boolean = !getAccessToken().isNullOrBlank()
+    fun isLoggedIn(): Boolean {
+        if (!getAccessToken().isNullOrBlank()) return true
+        val fbUser = runCatching { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }.getOrNull()
+        return fbUser != null
+    }
 
     fun isBataydar(): Boolean = getUserRole() == ROLE_BATAYDAR || (isLoggedIn() && getUserRole() == null)
 

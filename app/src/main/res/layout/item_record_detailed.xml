@@ -35,6 +35,19 @@
                 tools:text="Wheat / Gehun (गेहूँ)" />
 
             <TextView
+                android:id="@+id/tvSyncStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_badge_neutral"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Pending Upload"
+                android:textColor="@color/status_warning"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/tvLandlordStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
