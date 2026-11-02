@@ -1,6 +1,8 @@
 const { verifyFirebaseIdToken } = require('../config/firebase');
 const User = require('../models/User');
 
+
+
 async function authenticateToken(req, res, next) {
   try {
     const authHeader = req.headers['authorization'];
