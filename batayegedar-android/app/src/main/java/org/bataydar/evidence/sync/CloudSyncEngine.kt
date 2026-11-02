@@ -18,8 +18,10 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.bataydar.evidence.data.local.CropRecordDao
+import org.bataydar.evidence.data.local.DeletionTombstoneDao
 import org.bataydar.evidence.data.local.GeotaggedEvidenceDao
 import org.bataydar.evidence.data.model.CropRecordEntity
+import org.bataydar.evidence.data.model.DeletionTombstoneEntity
 import org.bataydar.evidence.data.model.GeotaggedEvidenceEntity
 import org.bataydar.evidence.data.model.LandlordStatus
 import org.bataydar.evidence.data.model.SyncStatus
@@ -73,7 +75,8 @@ data class UploadResult(
 class CloudSyncEngine(
     private val context: Context,
     private val cropRecordDao: CropRecordDao,
-    private val evidenceDao: GeotaggedEvidenceDao
+    private val evidenceDao: GeotaggedEvidenceDao,
+    private val deletionTombstoneDao: DeletionTombstoneDao
 ) {
     private val TAG = "CloudSyncEngine"
 
@@ -123,7 +126,8 @@ class CloudSyncEngine(
 
         val pendingRecords = cropRecordDao.getPendingSyncCountDirect()
         val pendingEvidence = evidenceDao.getUnsyncedEvidenceCountDirect()
-        val totalPending = pendingRecords + pendingEvidence
+        val pendingDeletions = deletionTombstoneDao.getPendingDeletionsCount()
+        val totalPending = pendingRecords + pendingEvidence + pendingDeletions
 
         val state = when {
             !isOnline -> CloudSyncState.OFFLINE
@@ -207,6 +211,22 @@ class CloudSyncEngine(
             if (directResponse.isSuccessful && directResponse.body()?.success == true) {
                 Log.d(TAG, "Evidence ${evidence.evidenceId} uploaded via POST /sync/upload successfully.")
                 return true
+            }
+
+            if (directResponse.code() == 410) {
+                Log.w(TAG, "Evidence ${evidence.evidenceId} was deleted on the server (410 GONE). Deleting locally.")
+                evidenceDao.deleteEvidenceById(evidence.evidenceId)
+                try { photoFile.delete() } catch (_: Exception) {}
+                deletionTombstoneDao.insertTombstone(
+                    DeletionTombstoneEntity(
+                        recordUuid = evidence.evidenceId,
+                        recordType = "EVIDENCE",
+                        recordId = evidence.recordId,
+                        firebaseUid = tokenManager.getUserId().orEmpty(),
+                        syncStatus = SyncStatus.DELETED
+                    )
+                )
+                return false
             }
 
             if (directResponse.code() != 404) {
@@ -310,7 +330,8 @@ class CloudSyncEngine(
 
     /**
      * Upload Data action:
-     * - Reads locally pending records and fields from Room
+     * - First syncs all pending deletions with the cloud and Cloudinary
+     * - Reads locally pending records and fields from Room (filtering out tombstones)
      * - Uploads records and fields to user account
      * - Uploads all pending original photos with byte-level verification
      * - Updates local sync status only when cloud persistence is confirmed
@@ -337,13 +358,15 @@ class CloudSyncEngine(
             return@withContext UploadResult(false, 0, 0, 0, msg)
         }
 
+        val pendingDeletions = deletionTombstoneDao.getPendingDeletions()
         val pendingRecords = cropRecordDao.getPendingRecords()
         val pendingEvidenceList = evidenceDao.getPendingEvidence()
 
         val totalRecords = pendingRecords.size
         val totalPhotos = pendingEvidenceList.size
+        val totalDeletions = pendingDeletions.size
 
-        if (totalRecords == 0 && totalPhotos == 0) {
+        if (totalRecords == 0 && totalPhotos == 0 && totalDeletions == 0) {
             val msg = "All records and photos are already up to date in the cloud."
             _uploadProgressFlow.value = _uploadProgressFlow.value.copy(
                 isUploading = false,
@@ -362,7 +385,7 @@ class CloudSyncEngine(
             totalPhotos = totalPhotos,
             uploadedPhotos = 0,
             failedPhotos = 0,
-            currentStepMessage = "Uploading crop records to cloud...",
+            currentStepMessage = if (totalDeletions > 0) "Synchronizing deletions with cloud..." else "Uploading crop records to cloud...",
             lastUploadTimestamp = tokenManager.getLastUploadTimestamp()
         )
 
@@ -371,9 +394,43 @@ class CloudSyncEngine(
         var photosFailed = 0
 
         try {
+            // 0. Synchronize Pending Deletions FIRST
+            if (pendingDeletions.isNotEmpty()) {
+                val delEvidenceIds = pendingDeletions.filter { it.recordType == "EVIDENCE" }.map { it.recordUuid }
+                val delRecordIds = pendingDeletions.filter { it.recordType == "CROP_RECORD" }.map { it.recordUuid }
+
+                val delRequest = SyncDeletionsRequest(
+                    deletedEvidenceIds = delEvidenceIds,
+                    deletedRecordIds = delRecordIds
+                )
+
+                val delResponse = apiClient.syncApi.syncDeletions(delRequest)
+                if (!delResponse.isSuccessful || delResponse.body()?.success != true) {
+                    val errMsg = "Failed syncing deletions: (code ${delResponse.code()})"
+                    Log.e(TAG, errMsg)
+                    _uploadProgressFlow.value = _uploadProgressFlow.value.copy(
+                        isUploading = false,
+                        lastError = errMsg
+                    )
+                    refreshSyncState()
+                    return@withContext UploadResult(false, 0, 0, 0, errMsg)
+                }
+
+                // Mark confirmed deletions as DELETED
+                for (tombstone in pendingDeletions) {
+                    deletionTombstoneDao.updateSyncStatus(tombstone.recordUuid, SyncStatus.DELETED)
+                }
+                Log.d(TAG, "Synchronized ${pendingDeletions.size} deletion tombstones with cloud.")
+            }
+
+            // Exclude any tombstoned entities from upload to prevent resurrecting deleted records
+            val tombstoneUuids = deletionTombstoneDao.getAllTombstoneUuids().toSet()
+            val activePendingRecords = pendingRecords.filter { it.recordId !in tombstoneUuids }
+            val activePendingEvidenceList = pendingEvidenceList.filter { it.evidenceId !in tombstoneUuids && it.recordId !in tombstoneUuids }
+
             // 1. Push Crop Records and Field Metadata
-            if (pendingRecords.isNotEmpty()) {
-                val syncItems = pendingRecords.map { record ->
+            if (activePendingRecords.isNotEmpty()) {
+                val syncItems = activePendingRecords.map { record ->
                     SyncCropRecordItem(
                         recordId = record.recordId,
                         fieldId = record.recordId,
@@ -385,7 +442,7 @@ class CloudSyncEngine(
                     )
                 }
 
-                val syncFields = pendingRecords.map { record ->
+                val syncFields = activePendingRecords.map { record ->
                     SyncFieldItem(
                         fieldId = record.recordId,
                         fieldName = record.fieldName,
@@ -417,8 +474,9 @@ class CloudSyncEngine(
             }
 
             // 2. Upload Pending Evidence Photographs (actual binary bytes)
-            for ((index, evidence) in pendingEvidenceList.withIndex()) {
-                val stepMsg = "Uploading photo ${index + 1} of $totalPhotos..."
+            val totalActivePhotos = activePendingEvidenceList.size
+            for ((index, evidence) in activePendingEvidenceList.withIndex()) {
+                val stepMsg = "Uploading photo ${index + 1} of $totalActivePhotos..."
                 _uploadProgressFlow.value = _uploadProgressFlow.value.copy(
                     currentStepMessage = stepMsg,
                     uploadedPhotos = photosUploaded,
@@ -438,14 +496,18 @@ class CloudSyncEngine(
                     evidenceDao.updateSyncStatus(evidence.evidenceId, SyncStatus.SYNCED)
                     photosUploaded++
                 } else {
-                    evidenceDao.updateSyncStatus(evidence.evidenceId, SyncStatus.SYNC_FAILED)
-                    photosFailed++
+                    if (deletionTombstoneDao.getTombstone(evidence.evidenceId) != null) {
+                        // Was tombstoned/deleted
+                    } else {
+                        evidenceDao.updateSyncStatus(evidence.evidenceId, SyncStatus.SYNC_FAILED)
+                        photosFailed++
+                    }
                 }
             }
 
             // 3. Mark Crop Records as fully SYNCED only when all required evidence photos are synced!
             val now = System.currentTimeMillis()
-            for (record in pendingRecords) {
+            for (record in activePendingRecords) {
                 val unsyncedPhotos = evidenceDao.getUnsyncedEvidenceCountForRecord(record.recordId)
                 if (unsyncedPhotos == 0) {
                     cropRecordDao.updateSyncStatus(record.recordId, SyncStatus.SYNCED, now)
@@ -458,7 +520,7 @@ class CloudSyncEngine(
 
             // 4. Save and report results
             tokenManager.saveLastUploadTimestamp(now)
-            val summaryStr = "Records uploaded: $recordsUploaded/$totalRecords  •  Photos uploaded: $photosUploaded/$totalPhotos${if (photosFailed > 0) "  •  Failed: $photosFailed" else ""}"
+            val summaryStr = "Records uploaded: $recordsUploaded/$totalRecords  •  Photos uploaded: $photosUploaded/$totalPhotos${if (photosFailed > 0) "  •  Failed: $photosFailed" else ""}${if (totalDeletions > 0) "  •  Deletions: $totalDeletions" else ""}"
             tokenManager.saveLastUploadSummary(summaryStr)
             tokenManager.saveLastSyncTimestamp(now)
             tokenManager.saveLastSyncStatus(if (photosFailed > 0) "PARTIAL" else "SYNCED")
@@ -479,7 +541,11 @@ class CloudSyncEngine(
 
             val success = photosFailed == 0
             val resultMessage = if (success) {
-                "Upload completed successfully: $recordsUploaded records, $photosUploaded photos."
+                if (recordsUploaded == 0 && photosUploaded == 0 && totalDeletions > 0) {
+                    "Cloud deletion completed: $totalDeletions records/photos removed permanently."
+                } else {
+                    "Upload completed successfully: $recordsUploaded records, $photosUploaded photos${if (totalDeletions > 0) ", $totalDeletions deletions synchronized" else ""}."
+                }
             } else {
                 "Upload finished with $photosFailed photo failure(s). Records: $recordsUploaded/$totalRecords, Photos: $photosUploaded/$totalPhotos."
             }

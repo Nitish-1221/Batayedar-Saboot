@@ -45,26 +45,30 @@ data class SyncEvidenceItem(
 
 data class SyncPushData(
     @SerializedName("serverTime") val serverTime: String,
-    @SerializedName("syncedFieldIds") val syncedFieldIds: List<String>,
-    @SerializedName("syncedRecordIds") val syncedRecordIds: List<String>,
-    @SerializedName("syncedEvidenceIds") val syncedEvidenceIds: List<String>
+    @SerializedName("syncedFieldIds") val syncedFieldIds: List<String> = emptyList(),
+    @SerializedName("syncedRecordIds") val syncedRecordIds: List<String> = emptyList(),
+    @SerializedName("syncedEvidenceIds") val syncedEvidenceIds: List<String> = emptyList()
 )
 
 data class SyncPullData(
     @SerializedName("serverTime") val serverTime: String,
-    @SerializedName("fields") val fields: List<FieldDto> = emptyList(),
-    @SerializedName("cropRecords") val cropRecords: List<CropRecordDto> = emptyList(),
-    @SerializedName("evidenceList") val evidenceList: List<EvidenceRestoreDto> = emptyList()
+    @SerializedName("fields") val fields: List<FieldDto>? = emptyList(),
+    @SerializedName("cropRecords") val cropRecords: List<CropRecordDto>? = emptyList(),
+    @SerializedName("evidenceList") val evidenceList: List<EvidenceRestoreDto>? = emptyList(),
+    @SerializedName("deletedEvidenceIds") val deletedEvidenceIds: List<String>? = emptyList(),
+    @SerializedName("deletedRecordIds") val deletedRecordIds: List<String>? = emptyList()
 )
 
 data class SyncRestoreData(
     @SerializedName("serverTime") val serverTime: String,
     @SerializedName("firebaseUid") val firebaseUid: String?,
     @SerializedName("profile") val profile: UserDto?,
-    @SerializedName("fields") val fields: List<FieldDto> = emptyList(),
-    @SerializedName("cropRecords") val cropRecords: List<CropRecordDto> = emptyList(),
-    @SerializedName("evidenceList") val evidenceList: List<EvidenceRestoreDto> = emptyList(),
-    @SerializedName("confirmations") val confirmations: List<LandlordConfirmationItemDto> = emptyList(),
+    @SerializedName("fields") val fields: List<FieldDto>? = emptyList(),
+    @SerializedName("cropRecords") val cropRecords: List<CropRecordDto>? = emptyList(),
+    @SerializedName("evidenceList") val evidenceList: List<EvidenceRestoreDto>? = emptyList(),
+    @SerializedName("confirmations") val confirmations: List<LandlordConfirmationItemDto>? = emptyList(),
+    @SerializedName("deletedEvidenceIds") val deletedEvidenceIds: List<String>? = emptyList(),
+    @SerializedName("deletedRecordIds") val deletedRecordIds: List<String>? = emptyList(),
     @SerializedName("totalCounts") val totalCounts: SyncRestoreCounts? = null
 )
 
@@ -117,4 +121,15 @@ data class EvidenceUploadResponse(
     @SerializedName("storageProvider") val storageProvider: String? = null,
     @SerializedName("validationStatus") val validationStatus: String? = null,
     @SerializedName("sha256Checksum") val sha256Checksum: String? = null
+)
+
+data class SyncDeletionsRequest(
+    @SerializedName("deletedEvidenceIds") val deletedEvidenceIds: List<String> = emptyList(),
+    @SerializedName("deletedRecordIds") val deletedRecordIds: List<String> = emptyList()
+)
+
+data class SyncDeletionsResponse(
+    @SerializedName("confirmedDeletedEvidenceIds") val confirmedDeletedEvidenceIds: List<String>? = emptyList(),
+    @SerializedName("confirmedDeletedRecordIds") val confirmedDeletedRecordIds: List<String>? = emptyList(),
+    @SerializedName("serverTime") val serverTime: String? = null
 )

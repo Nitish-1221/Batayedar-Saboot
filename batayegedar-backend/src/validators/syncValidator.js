@@ -60,8 +60,17 @@ const syncRestoreSchema = {
   })
 };
 
+
+const syncDeletionsSchema = {
+  body: z.object({
+    deletedEvidenceIds: z.array(z.string().min(1)).optional().default([]),
+    deletedRecordIds: z.array(z.string().min(1)).optional().default([])
+  })
+};
+
 module.exports = {
   syncPushSchema,
   syncPullSchema,
-  syncRestoreSchema
+  syncRestoreSchema,
+  syncDeletionsSchema
 };

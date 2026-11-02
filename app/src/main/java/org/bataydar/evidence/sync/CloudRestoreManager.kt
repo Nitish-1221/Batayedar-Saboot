@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import org.bataydar.evidence.data.local.AppDatabase
 import org.bataydar.evidence.data.model.CropRecordEntity
+import org.bataydar.evidence.data.model.DeletionTombstoneEntity
 import org.bataydar.evidence.data.model.FarmerProfileEntity
 import org.bataydar.evidence.data.model.GeotaggedEvidenceEntity
 import org.bataydar.evidence.data.model.LandlordStatus
@@ -51,6 +52,7 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
 
     private val TAG = "CloudRestoreManager"
     private val db = AppDatabase.getDatabase(appContext)
+    private val tombstoneDao = db.deletionTombstoneDao()
     private val apiClient by lazy { ApiClient.getInstance(appContext) }
     private val tokenManager by lazy { TokenManager.getInstance(appContext) }
 
@@ -134,18 +136,25 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 val pullResponse = apiClient.syncApi.pullSync()
                 val pullData = pullResponse.body()?.data
                 if (pullResponse.isSuccessful && pullData != null) {
+                    val pFields = pullData.fields ?: emptyList()
+                    val pCropRecords = pullData.cropRecords ?: emptyList()
+                    val pEvidenceList = pullData.evidenceList ?: emptyList()
+                    val pDelEv = pullData.deletedEvidenceIds ?: emptyList()
+                    val pDelRec = pullData.deletedRecordIds ?: emptyList()
                     restoreData = SyncRestoreData(
                         serverTime = pullData.serverTime,
                         firebaseUid = tokenManager.getUserId(),
                         profile = null,
-                        fields = pullData.fields,
-                        cropRecords = pullData.cropRecords,
-                        evidenceList = pullData.evidenceList,
+                        fields = pFields,
+                        cropRecords = pCropRecords,
+                        evidenceList = pEvidenceList,
                         confirmations = emptyList(),
+                        deletedEvidenceIds = pDelEv,
+                        deletedRecordIds = pDelRec,
                         totalCounts = SyncRestoreCounts(
-                            fields = pullData.fields.size,
-                            cropRecords = pullData.cropRecords.size,
-                            evidenceList = pullData.evidenceList.size,
+                            fields = pFields.size,
+                            cropRecords = pCropRecords.size,
+                            evidenceList = pEvidenceList.size,
                             confirmations = 0
                         )
                     )
@@ -168,10 +177,53 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 return@withContext Result.failure(Exception(errorMsg))
             }
 
+            // Clean up any records/evidence that were deleted on cloud or tombstoned locally
+            val remoteDeletedEvidenceIds = restoreData.deletedEvidenceIds ?: emptyList()
+            val remoteDeletedRecordIds = restoreData.deletedRecordIds ?: emptyList()
+            val localTombstones = tombstoneDao.getAllTombstoneUuids() ?: emptyList()
+            val allTombstones = (remoteDeletedEvidenceIds + remoteDeletedRecordIds + localTombstones).toSet()
+
+            for (delId in remoteDeletedRecordIds) {
+                db.cropRecordDao().deleteRecordById(delId)
+                tombstoneDao.insertTombstone(
+                    DeletionTombstoneEntity(
+                        recordUuid = delId,
+                        recordType = "CROP_RECORD",
+                        recordId = delId,
+                        firebaseUid = tokenManager.getUserId().orEmpty(),
+                        syncStatus = SyncStatus.DELETED
+                    )
+                )
+            }
+
+            for (delId in remoteDeletedEvidenceIds) {
+                val localEv = db.geotaggedEvidenceDao().getEvidenceById(delId)
+                if (localEv != null) {
+                    try {
+                        File(localEv.originalPhotoPath).takeIf { it.exists() }?.delete()
+                        localEv.watermarkedPhotoPath?.let { File(it).takeIf { f -> f.exists() }?.delete() }
+                    } catch (_: Exception) {}
+                    db.geotaggedEvidenceDao().deleteEvidenceById(delId)
+                }
+                tombstoneDao.insertTombstone(
+                    DeletionTombstoneEntity(
+                        recordUuid = delId,
+                        recordType = "EVIDENCE",
+                        recordId = localEv?.recordId ?: "",
+                        firebaseUid = tokenManager.getUserId().orEmpty(),
+                        syncStatus = SyncStatus.DELETED
+                    )
+                )
+            }
+
+            val cropRecordsList = restoreData.cropRecords ?: emptyList()
+            val rawEvidenceList = restoreData.evidenceList ?: emptyList()
+            val fieldsList = restoreData.fields ?: emptyList()
+
             _restoreState.value = RestoreState.Restoring(15, 100, "Restoring farmer profile and field data...")
             _restoreProgressFlow.value = _restoreProgressFlow.value.copy(
-                totalRecords = restoreData.cropRecords.size,
-                totalPhotos = restoreData.evidenceList.size,
+                totalRecords = cropRecordsList.size,
+                totalPhotos = rawEvidenceList.size,
                 currentStepMessage = "Restoring farmer profile and field data..."
             )
 
@@ -196,10 +248,16 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
                 currentStepMessage = "Restoring crop cultivation records..."
             )
 
-            val fieldMap = restoreData.fields.associateBy { it.fieldId }
+            val fieldMap = fieldsList.associateBy { it.fieldId }
             val cropEntitiesToSave = mutableListOf<CropRecordEntity>()
 
-            for (r in restoreData.cropRecords) {
+            for (r in cropRecordsList) {
+                // Skip if deleted or tombstoned
+                if (r.recordId in allTombstones) {
+                    Log.d(TAG, "Skipping restored crop record ${r.recordId} because it is deleted/tombstoned.")
+                    continue
+                }
+
                 val field = fieldMap[r.fieldId]
                 val createdAtMillis = parseDateMillis(r.createdAt)
                 val cloudUpdatedAt = parseDateMillis(r.updatedAt)
@@ -256,13 +314,15 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
             )
 
             // 3. Download Authorized Evidence Photographs and Restore Metadata
-            val evidenceList = restoreData.evidenceList
-            val totalEv = evidenceList.size
+            val validEvidenceList = rawEvidenceList.filter { ev ->
+                ev.evidenceId !in allTombstones && ev.recordId !in allTombstones
+            }
+            val totalEv = validEvidenceList.size
             var downloadedPhotos = 0
             var failedPhotos = 0
             val photosDir = FileUtils.getEvidencePhotosDirectory(appContext)
 
-            for ((index, ev) in evidenceList.withIndex()) {
+            for ((index, ev) in validEvidenceList.withIndex()) {
                 val stepProgress = 40 + if (totalEv > 0) ((index + 1) * 55 / totalEv) else 55
                 val msg = "Restoring evidence photo ${index + 1} of $totalEv..."
                 _restoreState.value = RestoreState.Restoring(stepProgress, 100, msg)
@@ -365,16 +425,16 @@ class CloudRestoreManager private constructor(private val appContext: Context) {
             tokenManager.saveLastRestoreSummary(summaryStr)
 
             val counts = SyncRestoreCounts(
-                fields = restoreData.fields.size,
+                fields = fieldsList.size,
                 cropRecords = cropEntitiesToSave.size,
-                evidenceList = evidenceList.size,
-                confirmations = restoreData.confirmations.size
+                evidenceList = validEvidenceList.size,
+                confirmations = (restoreData.confirmations ?: emptyList()).size
             )
 
             _restoreState.value = RestoreState.Success(cropEntitiesToSave.size, downloadedPhotos)
             _restoreProgressFlow.value = RestoreProgressInfo(
                 isRestoring = false,
-                totalRecords = restoreData.cropRecords.size,
+                totalRecords = cropRecordsList.size,
                 restoredRecords = cropEntitiesToSave.size,
                 totalPhotos = totalEv,
                 downloadedPhotos = downloadedPhotos,

@@ -63,6 +63,11 @@ const cropRecordSchema = new mongoose.Schema(
       default: false,
       index: true
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true
+    },
     hasEvidence: {
       type: Boolean,
       default: false

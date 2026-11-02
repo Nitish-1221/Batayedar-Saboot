@@ -4,6 +4,7 @@ const Field = require('../models/Field');
 const CropRecord = require('../models/CropRecord');
 const Evidence = require('../models/Evidence');
 const LandlordConfirmation = require('../models/LandlordConfirmation');
+const DeletionTombstone = require('../models/DeletionTombstone');
 const { recordAudit } = require('../services/auditService');
 const storageService = require('../services/storageService');
 const config = require('../config');
@@ -69,6 +70,12 @@ async function pushSync(req, res, next) {
     if (Array.isArray(cropRecords)) {
       for (const r of cropRecords) {
         if (!r.recordId) continue;
+        // Check tombstone to prevent resurrection
+        const recordTombstone = await DeletionTombstone.findOne({ recordUuid: r.recordId, firebaseUid });
+        if (recordTombstone) {
+          console.log('[pushSync] Rejecting deleted record ' + r.recordId + ' (tombstone exists)');
+          continue;
+        }
 
         const associatedField = await Field.findOne({
           fieldId: r.fieldId,
@@ -121,6 +128,12 @@ async function pushSync(req, res, next) {
     if (Array.isArray(evidenceList)) {
       for (const e of evidenceList) {
         if (!e.evidenceId) continue;
+        // Check tombstone to prevent resurrection
+        const evTombstone = await DeletionTombstone.findOne({ recordUuid: e.evidenceId, firebaseUid });
+        if (evTombstone) {
+          console.log('[pushSync] Rejecting deleted evidence ' + e.evidenceId + ' (tombstone exists)');
+          continue;
+        }
 
         const associatedRecord = await CropRecord.findOne({
           recordId: e.recordId,
@@ -298,6 +311,13 @@ async function restoreUserData(req, res, next) {
       $or: [{ farmerId }, { firebaseUid }]
     };
 
+    // Fetch server-side deletion tombstones
+    const tombstones = await DeletionTombstone.find({
+      $or: [{ farmerId }, { firebaseUid }]
+    });
+    const deletedEvidenceIds = tombstones.filter(t => t.recordType === 'EVIDENCE').map(t => t.recordUuid);
+    const deletedRecordIds = tombstones.filter(t => t.recordType === 'CROP_RECORD').map(t => t.recordUuid);
+
     // 2. Fetch all fields
     const fields = await Field.find({
       ...userFilter,
@@ -363,6 +383,9 @@ async function restoreUserData(req, res, next) {
         cropRecords,
         evidenceList,
         confirmations,
+        deletedEvidenceIds,
+        deletedRecordIds,
+        tombstones: tombstones.map(t => ({ recordUuid: t.recordUuid, recordType: t.recordType, deletedAt: t.deletedAt })),
         totalCounts: {
           fields: fields.length,
           cropRecords: cropRecords.length,
@@ -411,6 +434,18 @@ async function uploadDirect(req, res, next) {
       deviceManufacturer,
       deviceModel
     } = req.body;
+
+    // Prevent uploading previously deleted evidence
+    const existingTombstone = await DeletionTombstone.findOne({ recordUuid: evidenceId, firebaseUid });
+    if (existingTombstone) {
+      return res.status(410).json({
+        success: false,
+        error: {
+          code: 'EVIDENCE_DELETED',
+          message: 'Evidence was permanently deleted from cloud and cannot be re-uploaded.'
+        }
+      });
+    }
 
     if (!recordId || !evidenceId) {
       return res.status(400).json({
@@ -605,10 +640,187 @@ async function uploadDirect(req, res, next) {
   }
 }
 
+
+/**
+ * Synchronize pending deletions from client.
+ * Enforces ownership, permanently deletes associated Cloudinary photos,
+ * marks database entities as DELETED, and records server-side tombstones
+ * so records never reappear upon restore, data clearing, or multi-device sync.
+ */
+async function syncDeletions(req, res, next) {
+  try {
+    const farmerId = req.farmerId;
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || farmerId;
+    const { deletedEvidenceIds = [], deletedRecordIds = [] } = req.body;
+
+    const confirmedDeletedEvidenceIds = [];
+    const confirmedDeletedRecordIds = [];
+
+    // 1. Process Evidence Deletions
+    for (const evidenceId of deletedEvidenceIds) {
+      if (!evidenceId) continue;
+      const evidence = await Evidence.findOne({ evidenceId });
+      if (evidence) {
+        const isOwner = (evidence.farmerId === farmerId) ||
+          (evidence.firebaseUid === firebaseUid) ||
+          (req.user?.firebaseUid && evidence.firebaseUid === req.user.firebaseUid) ||
+          (req.user?.userId && evidence.farmerId === req.user.userId);
+
+        if (!isOwner) {
+          continue;
+        }
+
+        // Delete from Cloudinary if not shared
+        if (evidence.cloudinaryPublicId) {
+          try {
+            const shared = await Evidence.findOne({
+              cloudinaryPublicId: evidence.cloudinaryPublicId,
+              evidenceId: { $ne: evidence.evidenceId },
+              isDeleted: false
+            });
+            if (!shared) {
+              await storageService.deleteFromCloudinary(evidence.cloudinaryPublicId);
+            }
+          } catch (cloudErr) {
+            console.error('[SyncDeletions] Cloudinary delete error for ' + evidenceId + ':', cloudErr.message);
+          }
+        }
+
+        if (evidence.s3ObjectKey) {
+          try {
+            await storageService.deleteObject(evidence.s3ObjectKey);
+          } catch (e) {}
+        }
+
+        evidence.isDeleted = true;
+        evidence.deletedAt = new Date();
+        evidence.validationStatus = 'DELETED';
+        await evidence.save();
+      }
+
+      await DeletionTombstone.findOneAndUpdate(
+        { recordUuid: evidenceId, firebaseUid },
+        {
+          recordUuid: evidenceId,
+          recordType: 'EVIDENCE',
+          firebaseUid,
+          farmerId,
+          cloudinaryPublicId: evidence?.cloudinaryPublicId || '',
+          deletedAt: new Date(),
+          deletionStatus: 'PERMANENTLY_DELETED'
+        },
+        { upsert: true, new: true }
+      );
+
+      confirmedDeletedEvidenceIds.push(evidenceId);
+    }
+
+    // 2. Process Crop Record Deletions
+    for (const recordId of deletedRecordIds) {
+      if (!recordId) continue;
+      const record = await CropRecord.findOne({ recordId });
+      if (record) {
+        const isOwner = (record.farmerId === farmerId) ||
+          (record.firebaseUid === firebaseUid) ||
+          (req.user?.firebaseUid && record.firebaseUid === req.user.firebaseUid) ||
+          (req.user?.userId && record.farmerId === req.user.userId);
+
+        if (!isOwner) continue;
+
+        // Delete associated child evidence
+        const childEvidence = await Evidence.find({ recordId, isDeleted: false });
+        for (const ev of childEvidence) {
+          if (ev.cloudinaryPublicId) {
+            try {
+              const shared = await Evidence.findOne({
+                cloudinaryPublicId: ev.cloudinaryPublicId,
+                evidenceId: { $ne: ev.evidenceId },
+                isDeleted: false
+              });
+              if (!shared) {
+                await storageService.deleteFromCloudinary(ev.cloudinaryPublicId);
+              }
+            } catch (err) {}
+          }
+          if (ev.s3ObjectKey) {
+            try { await storageService.deleteObject(ev.s3ObjectKey); } catch (e) {}
+          }
+          ev.isDeleted = true;
+          ev.deletedAt = new Date();
+          ev.validationStatus = 'DELETED';
+          await ev.save();
+
+          await DeletionTombstone.findOneAndUpdate(
+            { recordUuid: ev.evidenceId, firebaseUid },
+            {
+              recordUuid: ev.evidenceId,
+              recordType: 'EVIDENCE',
+              firebaseUid,
+              farmerId,
+              cloudinaryPublicId: ev.cloudinaryPublicId || '',
+              deletedAt: new Date(),
+              deletionStatus: 'PERMANENTLY_DELETED'
+            },
+            { upsert: true }
+          );
+          if (!confirmedDeletedEvidenceIds.includes(ev.evidenceId)) {
+            confirmedDeletedEvidenceIds.push(ev.evidenceId);
+          }
+        }
+
+        record.status = 'DELETED';
+        record.isDeleted = true;
+        record.deletedAt = new Date();
+        await record.save();
+      }
+
+      await DeletionTombstone.findOneAndUpdate(
+        { recordUuid: recordId, firebaseUid },
+        {
+          recordUuid: recordId,
+          recordType: 'CROP_RECORD',
+          firebaseUid,
+          farmerId,
+          deletedAt: new Date(),
+          deletionStatus: 'PERMANENTLY_DELETED'
+        },
+        { upsert: true, new: true }
+      );
+
+      confirmedDeletedRecordIds.push(recordId);
+    }
+
+    await recordAudit({
+      action: 'SYNC_DELETIONS_COMPLETED',
+      actorId: farmerId,
+      resourceType: 'SYNC',
+      resourceId: firebaseUid,
+      details: {
+        evidenceDeletedCount: confirmedDeletedEvidenceIds.length,
+        recordsDeletedCount: confirmedDeletedRecordIds.length
+      },
+      req
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Cloud deletions synchronized and tombstones established successfully.',
+      data: {
+        confirmedDeletedEvidenceIds,
+        confirmedDeletedRecordIds,
+        serverTime: new Date().toISOString()
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   pushSync,
   pullSync,
   getChanges,
   restoreUserData,
-  uploadDirect
+  uploadDirect,
+  syncDeletions
 };

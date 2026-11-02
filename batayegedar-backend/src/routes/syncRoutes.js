@@ -4,7 +4,7 @@ const multer = require('multer');
 const syncController = require('../controllers/syncController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { validateRequest } = require('../middleware/validation');
-const { syncPushSchema, syncPullSchema, syncRestoreSchema } = require('../validators/syncValidator');
+const { syncPushSchema, syncPullSchema, syncRestoreSchema, syncDeletionsSchema } = require('../validators/syncValidator');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,5 +24,6 @@ router.get('/pull', validateRequest(syncPullSchema), syncController.pullSync);
 // Farmer only: push and upload
 router.post('/push', validateRequest(syncPushSchema), syncController.pushSync);
 router.post('/upload', upload.single('photo'), syncController.uploadDirect);
+router.post('/deletions', validateRequest(syncDeletionsSchema), syncController.syncDeletions);
 
 module.exports = router;

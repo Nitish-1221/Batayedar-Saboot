@@ -19,14 +19,16 @@ class BataydarApp : Application() {
             context = this,
             cropRecordDao = database.cropRecordDao(),
             evidenceDao = database.geotaggedEvidenceDao(),
-            auditLogDao = database.auditLogDao()
+            auditLogDao = database.auditLogDao(),
+            deletionTombstoneDao = database.deletionTombstoneDao()
         )
     }
     val cloudSyncEngine by lazy {
         CloudSyncEngine(
             context = this,
             cropRecordDao = database.cropRecordDao(),
-            evidenceDao = database.geotaggedEvidenceDao()
+            evidenceDao = database.geotaggedEvidenceDao(),
+            deletionTombstoneDao = database.deletionTombstoneDao()
         )
     }
     val cloudRestoreManager by lazy { org.bataydar.evidence.sync.CloudRestoreManager.getInstance(this) }

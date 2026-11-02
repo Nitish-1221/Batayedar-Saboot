@@ -26,4 +26,7 @@ interface SyncApiService {
         @Part photo: MultipartBody.Part,
         @PartMap parts: Map<String, @JvmSuppressWildcards RequestBody>
     ): Response<ApiResponse<EvidenceUploadResponse>>
+
+    @POST("sync/deletions")
+    suspend fun syncDeletions(@Body request: SyncDeletionsRequest): Response<ApiResponse<SyncDeletionsResponse>>
 }

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const Evidence = require('../models/Evidence');
+const DeletionTombstone = require('../models/DeletionTombstone');
 const CropRecord = require('../models/CropRecord');
 const storageService = require('../services/storageService');
 const { recordAudit } = require('../services/auditService');
@@ -352,37 +353,112 @@ async function getDownloadUrl(req, res, next) {
 async function deleteEvidence(req, res, next) {
   try {
     const { evidenceId } = req.params;
+    const farmerId = req.farmerId;
+    const firebaseUid = req.firebaseUid || req.user?.firebaseUid || farmerId;
 
-    const evidence = await Evidence.findOne({ evidenceId, isDeleted: false });
+    const evidence = await Evidence.findOne({ evidenceId });
     if (!evidence) {
+      // Check if already in DeletionTombstone
+      const tombstone = await DeletionTombstone.findOne({ recordUuid: evidenceId, firebaseUid });
+      if (tombstone) {
+        return res.status(200).json({
+          success: true,
+          message: 'Evidence is already permanently deleted.',
+          data: { evidenceId }
+        });
+      }
       return res.status(404).json({
         success: false,
         error: { code: 'EVIDENCE_NOT_FOUND', message: 'Evidence not found' }
       });
     }
 
-    if (evidence.farmerId !== req.farmerId) {
+    const isOwner = (evidence.farmerId === farmerId) ||
+      (evidence.firebaseUid === firebaseUid) ||
+      (req.user?.firebaseUid && evidence.firebaseUid === req.user.firebaseUid) ||
+      (req.user?.userId && evidence.farmerId === req.user.userId);
+
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'You are not authorized to delete this evidence' }
       });
     }
 
+    // Delete image from Cloudinary if not shared by another active record
+    if (evidence.cloudinaryPublicId) {
+      try {
+        const sharedActive = await Evidence.findOne({
+          cloudinaryPublicId: evidence.cloudinaryPublicId,
+          evidenceId: { $ne: evidence.evidenceId },
+          isDeleted: false
+        });
+        if (!sharedActive) {
+          await storageService.deleteFromCloudinary(evidence.cloudinaryPublicId);
+        }
+      } catch (cloudErr) {
+        console.error('[deleteEvidence] Cloudinary deletion error:', cloudErr.message);
+        return res.status(502).json({
+          success: false,
+          error: {
+            code: 'CLOUDINARY_DELETION_FAILED',
+            message: 'Failed deleting photo from cloud storage: ' + cloudErr.message + '. Please retry.'
+          }
+        });
+      }
+    }
+
+    if (evidence.s3ObjectKey) {
+      try {
+        await storageService.deleteObject(evidence.s3ObjectKey);
+      } catch (e) {}
+    }
+
     evidence.isDeleted = true;
+    evidence.deletedAt = new Date();
+    evidence.validationStatus = 'DELETED';
     await evidence.save();
 
+    // Create server-side tombstone
+    await DeletionTombstone.findOneAndUpdate(
+      { recordUuid: evidence.evidenceId, firebaseUid },
+      {
+        recordUuid: evidence.evidenceId,
+        recordType: 'EVIDENCE',
+        firebaseUid,
+        farmerId,
+        cloudinaryPublicId: evidence.cloudinaryPublicId || '',
+        deletedAt: new Date(),
+        deletionStatus: 'PERMANENTLY_DELETED'
+      },
+      { upsert: true, new: true }
+    );
+
+    // Update parent crop record's hasEvidence flag if no active evidence left
+    const remainingActive = await Evidence.countDocuments({
+      recordId: evidence.recordId,
+      isDeleted: false
+    });
+    if (remainingActive === 0) {
+      await CropRecord.updateOne({ recordId: evidence.recordId }, { hasEvidence: false, updatedAt: new Date() });
+    }
+
     await recordAudit({
-      action: 'EVIDENCE_DELETED',
-      actorId: req.farmerId,
+      action: 'EVIDENCE_PERMANENTLY_DELETED',
+      actorId: farmerId,
       resourceType: 'EVIDENCE',
       resourceId: evidence.evidenceId,
-      details: {},
+      details: {
+        recordId: evidence.recordId,
+        cloudinaryPublicId: evidence.cloudinaryPublicId || 'none'
+      },
       req
     });
 
     res.status(200).json({
       success: true,
-      message: 'Evidence soft-deleted successfully'
+      message: 'Evidence permanently deleted from cloud and storage successfully',
+      data: { evidenceId: evidence.evidenceId }
     });
   } catch (err) {
     next(err);

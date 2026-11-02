@@ -377,6 +377,33 @@ async function generateDownloadUrl(paramsOrKey, maybeFarmerId, maybeCloudinaryUr
 /**
  * Delete object from storage
  */
+
+/**
+ * Permanently delete image from Cloudinary by public_id
+ */
+async function deleteFromCloudinary(publicId) {
+  if (!publicId) return false;
+  if (!isCloudinaryConfigured()) {
+    console.warn('[Cloudinary] Skipping deletion: Cloudinary is not configured.');
+    return true;
+  }
+  try {
+    const res = await cloudinary.uploader.destroy(publicId, {
+      invalidate: true,
+      resource_type: 'image'
+    });
+    console.log('[Cloudinary] Deletion response for', publicId, ':', res);
+    const ok = res && (res.result === 'ok' || res.result === 'not found');
+    if (!ok && res && res.result) {
+      console.warn('[Cloudinary] Deletion status was not ok:', res.result);
+    }
+    return ok;
+  } catch (err) {
+    console.error('[Cloudinary] Deletion error for', publicId, ':', err.message);
+    throw err;
+  }
+}
+
 async function deleteObject(objectKey) {
   try {
     if (config.storage.provider === 's3' && s3Client) {
@@ -415,5 +442,6 @@ module.exports = {
   generateLocalDownloadToken,
   verifyLocalDownloadToken,
   isCloudinaryConfigured,
-  uploadBufferToCloudinary
+  uploadBufferToCloudinary,
+  deleteFromCloudinary
 };

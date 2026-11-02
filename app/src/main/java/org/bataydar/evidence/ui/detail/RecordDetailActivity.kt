@@ -244,15 +244,37 @@ class RecordDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDeleteConfirmation() {
+        private fun showDeleteConfirmation() {
+        val options = arrayOf(
+            "Delete Everywhere (Cloud & All Devices)",
+            "Delete Locally (This Phone Only)"
+        )
         AlertDialog.Builder(this)
-            .setTitle(R.string.confirm_delete_title)
-            .setMessage(R.string.confirm_delete_message)
-            .setPositiveButton(R.string.action_delete) { _, _ ->
-                lifecycleScope.launch {
-                    evidenceRepository.deleteRecord(recordId)
-                    Toast.makeText(this@RecordDetailActivity, "Record deleted", Toast.LENGTH_SHORT).show()
-                    finish()
+            .setTitle("Delete Cultivation Record")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        AlertDialog.Builder(this)
+                            .setTitle("Permanent Cloud Deletion")
+                            .setMessage("This will permanently delete this cultivation record and all its photos from the cloud and all devices. This action cannot be undone. Are you sure?")
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setPositiveButton("Delete Everywhere") { _, _ ->
+                                lifecycleScope.launch {
+                                    evidenceRepository.deleteRecordEverywhere(recordId)
+                                    Toast.makeText(this@RecordDetailActivity, "Record queued for permanent cloud deletion", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }
+                            }
+                            .setNegativeButton(R.string.action_cancel, null)
+                            .show()
+                    }
+                    1 -> {
+                        lifecycleScope.launch {
+                            evidenceRepository.deleteRecordLocally(recordId)
+                            Toast.makeText(this@RecordDetailActivity, "Record deleted from this phone only", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                    }
                 }
             }
             .setNegativeButton(R.string.action_cancel, null)
@@ -260,13 +282,34 @@ class RecordDetailActivity : AppCompatActivity() {
     }
 
     private fun showDeleteEvidenceConfirmation(evidence: GeotaggedEvidenceEntity) {
+        val options = arrayOf(
+            "Delete Everywhere (Cloud & All Devices)",
+            "Delete Locally (This Phone Only)"
+        )
         AlertDialog.Builder(this)
-            .setTitle("Delete Evidence Photo?")
-            .setMessage("Are you sure you want to delete this GPS photograph? This action cannot be undone.")
-            .setPositiveButton(R.string.action_delete) { _, _ ->
-                lifecycleScope.launch {
-                    evidenceRepository.deleteEvidence(evidence.evidenceId)
-                    Toast.makeText(this@RecordDetailActivity, "Photo deleted", Toast.LENGTH_SHORT).show()
+            .setTitle("Delete Evidence Photo")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        AlertDialog.Builder(this)
+                            .setTitle("Permanent Cloud Deletion")
+                            .setMessage("This will permanently delete this evidence from the cloud and all devices. This action cannot be undone. Are you sure?")
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setPositiveButton("Delete Everywhere") { _, _ ->
+                                lifecycleScope.launch {
+                                    evidenceRepository.deleteEvidenceEverywhere(evidence.evidenceId)
+                                    Toast.makeText(this@RecordDetailActivity, "Photo queued for permanent cloud deletion", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            .setNegativeButton(R.string.action_cancel, null)
+                            .show()
+                    }
+                    1 -> {
+                        lifecycleScope.launch {
+                            evidenceRepository.deleteEvidenceLocally(evidence.evidenceId)
+                            Toast.makeText(this@RecordDetailActivity, "Photo deleted from this phone only", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
             .setNegativeButton(R.string.action_cancel, null)

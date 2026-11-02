@@ -8,13 +8,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.bataydar.evidence.data.local.AuditLogDao
 import org.bataydar.evidence.data.local.CropRecordDao
+import org.bataydar.evidence.data.local.DeletionTombstoneDao
 import org.bataydar.evidence.data.local.GeotaggedEvidenceDao
 import org.bataydar.evidence.data.model.AuditLogEntity
 import org.bataydar.evidence.data.model.CropRecordEntity
+import org.bataydar.evidence.data.model.DeletionTombstoneEntity
 import org.bataydar.evidence.data.model.GeotaggedEvidenceEntity
 import org.bataydar.evidence.data.model.LandlordStatus
 import org.bataydar.evidence.data.model.RecordWithEvidence
 import org.bataydar.evidence.data.model.SyncStatus
+import org.bataydar.evidence.data.remote.auth.TokenManager
 import org.bataydar.evidence.export.ChecksumUtils
 import org.bataydar.evidence.util.FileUtils
 import org.bataydar.evidence.util.ImageWatermarkUtils
@@ -29,8 +32,11 @@ class EvidenceRepository(
     private val context: Context,
     private val cropRecordDao: CropRecordDao,
     private val evidenceDao: GeotaggedEvidenceDao,
-    private val auditLogDao: AuditLogDao
+    private val auditLogDao: AuditLogDao,
+    private val deletionTombstoneDao: DeletionTombstoneDao
 ) {
+
+    private val tokenManager by lazy { TokenManager.getInstance(context) }
 
     val allRecordsFlow: Flow<List<RecordWithEvidence>> = cropRecordDao.getAllRecordsWithEvidenceFlow()
     val totalFieldsCount: Flow<Int> = cropRecordDao.getTotalFieldsCount()
@@ -268,10 +274,75 @@ class EvidenceRepository(
         )
     }
 
-    suspend fun deleteRecord(recordId: String) = withContext(Dispatchers.IO) {
+    /**
+     * Delete evidence from THIS device only.
+     * Removes the physical image files and deletes Room database row.
+     * Does not delete cloud evidence or create a cloud deletion tombstone.
+     */
+    suspend fun deleteEvidenceLocally(evidenceId: String) = withContext(Dispatchers.IO) {
+        val evidence = evidenceDao.getEvidenceById(evidenceId)
+        if (evidence != null) {
+            try {
+                File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
+                evidence.watermarkedPhotoPath?.let { File(it).takeIf { f -> f.exists() }?.delete() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            evidenceDao.deleteEvidenceById(evidenceId)
+            logAuditAction(evidence.recordId, "EVIDENCE_DELETED_LOCALLY", "Evidence photo $evidenceId deleted from local device only.")
+        }
+    }
+
+    /**
+     * Delete evidence EVERYWHERE (Permanent Cloud & Local Deletion).
+     * Deletes local files, removes Room record, and establishes a local deletion tombstone
+     * (marked DELETION_PENDING) so the deletion synchronizes to the cloud upon next Upload Data / Sync.
+     */
+    suspend fun deleteEvidenceEverywhere(evidenceId: String) = withContext(Dispatchers.IO) {
+        val evidence = evidenceDao.getEvidenceById(evidenceId)
+        val uid = tokenManager.getUserId().orEmpty()
+        if (evidence != null) {
+            try {
+                File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
+                evidence.watermarkedPhotoPath?.let { File(it).takeIf { f -> f.exists() }?.delete() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // Create tombstone to queue cloud deletion
+            val tombstone = DeletionTombstoneEntity(
+                recordUuid = evidence.evidenceId,
+                recordType = "EVIDENCE",
+                recordId = evidence.recordId,
+                firebaseUid = uid,
+                deletedAt = System.currentTimeMillis(),
+                syncStatus = SyncStatus.DELETION_PENDING
+            )
+            deletionTombstoneDao.insertTombstone(tombstone)
+
+            // Remove from local active evidence table
+            evidenceDao.deleteEvidenceById(evidenceId)
+            logAuditAction(evidence.recordId, "EVIDENCE_DELETED_EVERYWHERE", "Evidence photo $evidenceId queued for cloud deletion and permanent removal.")
+        } else {
+            // Even if not in local Room, queue tombstone so cloud deletion takes place
+            val tombstone = DeletionTombstoneEntity(
+                recordUuid = evidenceId,
+                recordType = "EVIDENCE",
+                recordId = "",
+                firebaseUid = uid,
+                deletedAt = System.currentTimeMillis(),
+                syncStatus = SyncStatus.DELETION_PENDING
+            )
+            deletionTombstoneDao.insertTombstone(tombstone)
+        }
+    }
+
+    /**
+     * Delete entire crop record and associated evidence LOCALLY only.
+     */
+    suspend fun deleteRecordLocally(recordId: String) = withContext(Dispatchers.IO) {
         val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId)
         if (recordWithEvidence != null) {
-            // Delete associated physical photo files
             recordWithEvidence.evidenceList.forEach { evidence ->
                 try {
                     File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
@@ -283,21 +354,67 @@ class EvidenceRepository(
                 }
             }
             cropRecordDao.deleteRecordById(recordId)
+            logAuditAction(recordId, "RECORD_DELETED_LOCALLY", "Crop record $recordId deleted from local device only.")
         }
     }
 
-    suspend fun deleteEvidence(evidenceId: String) = withContext(Dispatchers.IO) {
-        val evidence = evidenceDao.getEvidenceById(evidenceId)
-        if (evidence != null) {
-            try {
-                File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
-                evidence.watermarkedPhotoPath?.let { File(it).takeIf { f -> f.exists() }?.delete() }
-            } catch (e: Exception) {
-                e.printStackTrace()
+    /**
+     * Delete entire crop record and associated evidence EVERYWHERE.
+     * Queues deletion tombstones for the crop record and all associated photos.
+     */
+    suspend fun deleteRecordEverywhere(recordId: String) = withContext(Dispatchers.IO) {
+        val recordWithEvidence = cropRecordDao.getRecordWithEvidence(recordId)
+        val uid = tokenManager.getUserId().orEmpty()
+        if (recordWithEvidence != null) {
+            recordWithEvidence.evidenceList.forEach { evidence ->
+                try {
+                    File(evidence.originalPhotoPath).takeIf { it.exists() }?.delete()
+                    evidence.watermarkedPhotoPath?.let { path ->
+                        File(path).takeIf { it.exists() }?.delete()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                val evTombstone = DeletionTombstoneEntity(
+                    recordUuid = evidence.evidenceId,
+                    recordType = "EVIDENCE",
+                    recordId = recordId,
+                    firebaseUid = uid,
+                    deletedAt = System.currentTimeMillis(),
+                    syncStatus = SyncStatus.DELETION_PENDING
+                )
+                deletionTombstoneDao.insertTombstone(evTombstone)
             }
-            evidenceDao.deleteEvidenceById(evidenceId)
+
+            val recTombstone = DeletionTombstoneEntity(
+                recordUuid = recordId,
+                recordType = "CROP_RECORD",
+                recordId = recordId,
+                firebaseUid = uid,
+                deletedAt = System.currentTimeMillis(),
+                syncStatus = SyncStatus.DELETION_PENDING
+            )
+            deletionTombstoneDao.insertTombstone(recTombstone)
+
+            cropRecordDao.deleteRecordById(recordId)
+            logAuditAction(recordId, "RECORD_DELETED_EVERYWHERE", "Crop record $recordId queued for cloud deletion and permanent removal.")
+        } else {
+            val recTombstone = DeletionTombstoneEntity(
+                recordUuid = recordId,
+                recordType = "CROP_RECORD",
+                recordId = recordId,
+                firebaseUid = uid,
+                deletedAt = System.currentTimeMillis(),
+                syncStatus = SyncStatus.DELETION_PENDING
+            )
+            deletionTombstoneDao.insertTombstone(recTombstone)
         }
     }
+
+    // Default delete methods map to deleteEverywhere for safety
+    suspend fun deleteRecord(recordId: String) = deleteRecordEverywhere(recordId)
+    suspend fun deleteEvidence(evidenceId: String) = deleteEvidenceEverywhere(evidenceId)
 
     suspend fun logAuditAction(recordId: String, action: String, details: String) = withContext(Dispatchers.IO) {
         auditLogDao.insertLog(

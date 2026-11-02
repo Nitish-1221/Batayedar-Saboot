@@ -1,5 +1,8 @@
 const crypto = require('crypto');
 const CropRecord = require('../models/CropRecord');
+const Evidence = require('../models/Evidence');
+const DeletionTombstone = require('../models/DeletionTombstone');
+const storageService = require('../services/storageService');
 const Field = require('../models/Field');
 const { recordAudit } = require('../services/auditService');
 

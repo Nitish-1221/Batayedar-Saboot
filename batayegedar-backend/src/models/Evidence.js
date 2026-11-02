@@ -92,7 +92,7 @@ const evidenceSchema = new mongoose.Schema(
     },
     validationStatus: {
       type: String,
-      enum: ['PENDING_UPLOAD', 'VERIFIED', 'FAILED_INTEGRITY', 'FLAGGED_INACCURATE', 'REJECTED'],
+      enum: ['PENDING_UPLOAD', 'VERIFIED', 'FAILED_INTEGRITY', 'FLAGGED_INACCURATE', 'REJECTED', 'DELETED'],
       default: 'PENDING_UPLOAD',
       index: true
     },
@@ -124,6 +124,11 @@ const evidenceSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false,
+      index: true
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
       index: true
     }
   },
